@@ -48,14 +48,25 @@ export const PlanCard = ({ plan, isAnnual, index }: PlanCardProps) => {
         body: { priceId }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Checkout error:', error);
+        throw error;
+      }
+
+      if (data?.error) {
+        console.error('Checkout function error:', data.error);
+        toast.error(`Erro no checkout: ${data.error}`);
+        return;
+      }
 
       if (data?.url) {
         window.open(data.url, '_blank');
+      } else {
+        throw new Error('URL de checkout não foi retornada');
       }
     } catch (error) {
       console.error('Erro ao criar checkout:', error);
-      toast.error('Erro ao processar pagamento. Tente novamente.');
+      toast.error('Erro ao processar pagamento. Verifique os logs para mais detalhes.');
     }
   };
 

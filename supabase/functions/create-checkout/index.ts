@@ -25,6 +25,13 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
+    // Verify STRIPE_SECRET_KEY is available
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    if (!stripeKey) {
+      throw new Error("STRIPE_SECRET_KEY is not configured");
+    }
+    logStep("Stripe key verified");
+
     // Get request body to extract price ID
     const body = await req.json();
     const { priceId } = body;
@@ -35,17 +42,37 @@ serve(async (req) => {
     
     logStep("Price ID received", { priceId });
 
-    const authHeader = req.headers.get("Authorization")!;
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      throw new Error("Authorization header is missing");
+    }
+
     const token = authHeader.replace("Bearer ", "");
-    const { data } = await supabaseClient.auth.getUser(token);
+    const { data, error: authError } = await supabaseClient.auth.getUser(token);
+    
+    if (authError) {
+      throw new Error(`Authentication failed: ${authError.message}`);
+    }
+    
     const user = data.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
+    if (!user?.email) {
+      throw new Error("User not authenticated or email not available");
+    }
     
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { 
+    const stripe = new Stripe(stripeKey, { 
       apiVersion: "2023-10-16" 
     });
+    
+    // Verify price exists before creating session  
+    try {
+      const price = await stripe.prices.retrieve(priceId);
+      logStep("Price verified", { priceId, amount: price.unit_amount, currency: price.currency });
+    } catch (priceError) {
+      logStep("Price verification failed", { priceId, error: priceError.message });
+      throw new Error(`Invalid price ID: ${priceId}. Please check your Stripe dashboard.`);
+    }
     
     // Check if customer exists
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
