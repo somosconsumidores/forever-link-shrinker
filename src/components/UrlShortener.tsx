@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, Copy, ExternalLink, Zap, Download, QrCode } from "lucide-react";
+import { Link as RouterLink } from "react-router-dom";
 import QRCode from "qrcode";
 
 interface ShortenedUrl {
@@ -429,11 +430,14 @@ export const UrlShortener = () => {
                   {t('viewPlans')}
                 </Button>
                 <Button 
+                  asChild
                   variant="glass" 
                   size="lg"
                   className="h-12 px-8"
                 >
-                  {t('createFreeAccount')}
+                  <RouterLink to="/auth">
+                    {t('createFreeAccount')}
+                  </RouterLink>
                 </Button>
               </div>
 
