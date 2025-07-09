@@ -19,17 +19,17 @@ const Subscription = () => {
       monthlyPrice: 9.99,
       annualPrice: 119.88,
       links: '500',
-      clicks: 'Unlimited Trackable Clicks',
+      clicks: t('unlimitedClicksTrackable'),
       features: [
-        'Link Analytics',
-        'Advanced Link Management',
-        'Shorten URLs Using Branded Domains',
-        'Link Editing & Deletion',
-        'Custom Link Expiration Dates'
+        t('linkAnalytics'),
+        t('advancedLinkManagement'),
+        t('shortenUrlsBrandedDomains'),
+        t('linkEditingDeletion'),
+        t('customLinkExpiration')
       ],
-      description: 'Get full access to our Pro features including:',
-      additionalInfo: 'Enjoy 500 links with unlimited clicks and track up to 9.5K clicks on 9.5K additional links.',
-      buttonText: 'Sign Up',
+      description: t('proDescription'),
+      additionalInfo: t('proAdditionalInfo'),
+      buttonText: t('signUp'),
       popular: false
     },
     {
@@ -37,36 +37,36 @@ const Subscription = () => {
       monthlyPrice: 99.00,
       annualPrice: 1188.00,
       links: '100K',
-      clicks: 'Track up to 100K Clicks',
+      clicks: t('trackClicks').replace('{{count}}', '100K'),
       features: [],
-      description: 'Our bulk plan for users who need to generate a ton of short-term, branded links to support their marketing or operations.',
-      additionalInfo: 'Enjoy all Pro features, 90-day default link expiration, and track up to 100K clicks across 100K branded short links.',
-      buttonText: 'Sign Up',
+      description: t('bulkDescription'),
+      additionalInfo: t('bulkAdditionalInfo'),
+      buttonText: t('signUp'),
       popular: true
     },
     {
       name: 'Enterprise',
       monthlyPrice: null,
       annualPrice: null,
-      links: 'Custom',
+      links: t('custom'),
       clicks: '',
       features: [],
-      description: 'Need a larger limit, dedicated customer support, custom solutions, or specific compliance requirements?',
-      additionalInfo: 'We offer tailor-made plans for enterprises that need more than what our regular plans can offer. Have a chat with our experts to get started on an enterprise plan.',
-      buttonText: 'Contact Us',
+      description: t('enterpriseDescription'),
+      additionalInfo: t('enterpriseAdditionalInfo'),
+      buttonText: t('contactUs'),
       popular: false
     }
   ];
 
   const getPrice = (plan: typeof plans[0]) => {
-    if (plan.monthlyPrice === null) return 'Custom';
+    if (plan.monthlyPrice === null) return t('custom');
     const price = isAnnual ? plan.annualPrice / 12 : plan.monthlyPrice;
     return `$${price.toFixed(2)}`;
   };
 
   const getYearlyPrice = (plan: typeof plans[0]) => {
     if (plan.annualPrice === null) return '';
-    return `($${plan.annualPrice.toFixed(2)} / yr )`;
+    return `($${plan.annualPrice.toFixed(2)} ${t('perYear')} )`;
   };
 
   return (
@@ -80,8 +80,8 @@ const Subscription = () => {
             </Link>
           </Button>
           <div>
-            <h1 className="text-2xl font-bold">Minify-URL.com Plans</h1>
-            <p className="text-muted-foreground">Find a plan that meets your needs</p>
+            <h1 className="text-2xl font-bold">Minify-URL.com {t('plans')}</h1>
+            <p className="text-muted-foreground">{t('findPlanTitle')}</p>
           </div>
         </div>
       </div>
@@ -92,7 +92,7 @@ const Subscription = () => {
           {/* Billing Toggle */}
           <div className="flex items-center justify-center gap-4 mb-12">
             <Label htmlFor="billing-toggle" className="text-base">
-              Billing cycle: Monthly
+              {t('billingCycle')}: {t('monthly')}
             </Label>
             <Switch
               id="billing-toggle"
@@ -101,7 +101,7 @@ const Subscription = () => {
               className="data-[state=checked]:bg-primary"
             />
             <Label htmlFor="billing-toggle" className="text-base">
-              Annual
+              {t('annual')}
             </Label>
           </div>
 
@@ -115,7 +115,7 @@ const Subscription = () => {
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                     <div className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-medium">
-                      Most Popular
+                      {t('mostPopular')}
                     </div>
                   </div>
                 )}
@@ -126,7 +126,7 @@ const Subscription = () => {
                     <div className="flex items-baseline gap-1">
                       <span className="text-3xl font-bold">{getPrice(plan)}</span>
                       {plan.monthlyPrice && (
-                        <span className="text-muted-foreground">/ mo *</span>
+                        <span className="text-muted-foreground">{t('perMonth')}</span>
                       )}
                     </div>
                     {plan.annualPrice && isAnnual && (
@@ -136,7 +136,7 @@ const Subscription = () => {
                   
                   
                   <div className="text-center">
-                    <p className="font-medium">{plan.links} Links {plan.clicks && `with ${plan.clicks}`}</p>
+                    <p className="font-medium">{plan.links} {t('links')} {plan.clicks && `with ${plan.clicks}`}</p>
                   </div>
                 </CardHeader>
 
@@ -182,13 +182,13 @@ const Subscription = () => {
             <Card className="p-6 bg-gradient-secondary border-primary/20 max-w-2xl mx-auto">
               <div className="flex items-center gap-2 justify-center mb-4">
                 <Zap className="w-5 h-5 text-primary" />
-                <h3 className="text-lg font-semibold">Need help choosing a plan?</h3>
+                <h3 className="text-lg font-semibold">{t('needHelpChoosing')}</h3>
               </div>
               <p className="text-muted-foreground mb-4">
-                Not sure which plan is right for you? Our team is here to help you find the perfect solution for your needs.
+                {t('needHelpDescription')}
               </p>
               <Button variant="outline">
-                Contact Support
+                {t('contactSupport')}
               </Button>
             </Card>
           </div>
