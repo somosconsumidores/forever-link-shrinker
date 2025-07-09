@@ -404,55 +404,64 @@ export const UrlShortener = () => {
       </div>
 
       {/* Promotional Section */}
-      <div className="bg-primary text-primary-foreground py-12">
-        <div className="container mx-auto px-4 max-w-4xl text-center">
-          <h2 className="text-2xl font-bold mb-4">
-            {t('wantMoreTitle')}
-          </h2>
-          <p className="text-lg mb-8 text-primary-foreground/90">
-            {t('wantMoreDescription')}
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-            <Button 
-              variant="secondary" 
-              size="lg"
-              className="bg-white text-primary hover:bg-white/90"
-            >
-              {t('viewPlans')}
-            </Button>
-            <Button 
-              variant="outline" 
-              size="lg"
-              className="border-white text-white hover:bg-white hover:text-primary"
-            >
-              {t('createFreeAccount')}
-            </Button>
+      <div className="flex-1 flex items-center justify-center p-4">
+        <div className="w-full max-w-2xl space-y-8">
+          <div className="text-center space-y-4">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-glow border border-primary/20">
+              <Zap className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium text-muted-foreground">
+                {t('wantMoreTitle')}
+              </span>
+            </div>
+            <p className="text-lg text-muted-foreground max-w-lg mx-auto">
+              {t('wantMoreDescription')}
+            </p>
           </div>
 
-          <div className="text-left max-w-2xl mx-auto">
-            <p className="text-lg font-semibold mb-4 text-center">
-              {t('plansInclude')}
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-white rounded-full"></div>
-                <span>{t('detailedAnalytics')}</span>
+          <Card className="p-6 md:p-8 bg-card/50 backdrop-blur-sm border-border/50 shadow-card">
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button 
+                  variant="hero" 
+                  size="lg"
+                  className="h-12 px-8"
+                >
+                  {t('viewPlans')}
+                </Button>
+                <Button 
+                  variant="glass" 
+                  size="lg"
+                  className="h-12 px-8"
+                >
+                  {t('createFreeAccount')}
+                </Button>
               </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-white rounded-full"></div>
-                <span>{t('bulkShortUrls')}</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-white rounded-full"></div>
-                <span>{t('brandedDomains')}</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-white rounded-full"></div>
-                <span>{t('linkManagement')}</span>
+
+              <div className="space-y-4">
+                <p className="text-lg font-semibold text-center text-foreground">
+                  {t('plansInclude')}
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="flex items-center space-x-3 p-3 rounded-lg bg-background/30 border border-border/30">
+                    <div className="w-2 h-2 bg-primary rounded-full"></div>
+                    <span className="text-sm text-foreground">{t('detailedAnalytics')}</span>
+                  </div>
+                  <div className="flex items-center space-x-3 p-3 rounded-lg bg-background/30 border border-border/30">
+                    <div className="w-2 h-2 bg-primary rounded-full"></div>
+                    <span className="text-sm text-foreground">{t('bulkShortUrls')}</span>
+                  </div>
+                  <div className="flex items-center space-x-3 p-3 rounded-lg bg-background/30 border border-border/30">
+                    <div className="w-2 h-2 bg-primary rounded-full"></div>
+                    <span className="text-sm text-foreground">{t('brandedDomains')}</span>
+                  </div>
+                  <div className="flex items-center space-x-3 p-3 rounded-lg bg-background/30 border border-border/30">
+                    <div className="w-2 h-2 bg-primary rounded-full"></div>
+                    <span className="text-sm text-foreground">{t('linkManagement')}</span>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          </Card>
         </div>
       </div>
     </div>
