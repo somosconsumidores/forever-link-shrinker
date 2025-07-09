@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Pencil, Trash2, Download, LogOut, Plus, Eye } from 'lucide-react';
+import { Pencil, Trash2, Download, LogOut, Plus, Eye, BarChart3 } from 'lucide-react';
 import QRCode from 'qrcode';
 
 interface ShortenedUrl {
@@ -315,6 +315,16 @@ const Dashboard = () => {
                                   </form>
                                 </DialogContent>
                               </Dialog>
+                              
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                asChild
+                              >
+                                <Link to={`/analytics/${url.short_code}`}>
+                                  <BarChart3 className="w-4 h-4" />
+                                </Link>
+                              </Button>
                               
                               <Button
                                 variant="outline"

@@ -14,6 +14,56 @@ export type Database = {
   }
   public: {
     Tables: {
+      link_analytics: {
+        Row: {
+          browser: string | null
+          city: string | null
+          clicked_at: string
+          country: string | null
+          device_type: string | null
+          id: string
+          ip_address: string | null
+          os: string | null
+          referrer: string | null
+          short_code: string
+          user_agent: string | null
+        }
+        Insert: {
+          browser?: string | null
+          city?: string | null
+          clicked_at?: string
+          country?: string | null
+          device_type?: string | null
+          id?: string
+          ip_address?: string | null
+          os?: string | null
+          referrer?: string | null
+          short_code: string
+          user_agent?: string | null
+        }
+        Update: {
+          browser?: string | null
+          city?: string | null
+          clicked_at?: string
+          country?: string | null
+          device_type?: string | null
+          id?: string
+          ip_address?: string | null
+          os?: string | null
+          referrer?: string | null
+          short_code?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "link_analytics_short_code_fkey"
+            columns: ["short_code"]
+            isOneToOne: false
+            referencedRelation: "shortened_urls"
+            referencedColumns: ["short_code"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -76,7 +126,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_link_analytics_summary: {
+        Args: { link_short_code: string }
+        Returns: {
+          total_clicks: number
+          today_clicks: number
+          this_week_clicks: number
+          this_month_clicks: number
+          top_countries: Json
+          top_devices: Json
+          top_browsers: Json
+          hourly_clicks: Json
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
