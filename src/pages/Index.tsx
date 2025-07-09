@@ -12,7 +12,7 @@ const Index = () => {
       {/* Navigation */}
       <div className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Encurtado</h1>
+          <img src="/lovable-uploads/ffe1df88-96db-42c1-8d8f-8522631e22bb.png" alt="Minify-URL.com" className="h-8" />
           <div className="flex items-center space-x-2">
             {user ? (
               <Button asChild>
