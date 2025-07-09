@@ -317,7 +317,7 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className={!subscribed ? "relative" : ""}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -328,10 +328,19 @@ const Dashboard = () => {
                   <Eye className="h-4 w-4 text-primary" />
                 </div>
               </div>
+              {!subscribed && (
+                <div className="absolute inset-0 bg-background/80 backdrop-blur-sm rounded-lg flex items-center justify-center">
+                  <div className="text-center space-y-1">
+                    <Crown className="w-6 h-6 text-primary mx-auto" />
+                    <p className="text-sm font-medium text-primary">Premium</p>
+                    <p className="text-xs text-muted-foreground">Analytics detalhados</p>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className={!subscribed ? "relative" : ""}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -344,6 +353,15 @@ const Dashboard = () => {
                   <BarChart3 className="h-4 w-4 text-primary" />
                 </div>
               </div>
+              {!subscribed && (
+                <div className="absolute inset-0 bg-background/80 backdrop-blur-sm rounded-lg flex items-center justify-center">
+                  <div className="text-center space-y-1">
+                    <Crown className="w-6 h-6 text-primary mx-auto" />
+                    <p className="text-sm font-medium text-primary">Premium</p>
+                    <p className="text-xs text-muted-foreground">Analytics detalhados</p>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -522,46 +540,91 @@ const Dashboard = () => {
           </TabsContent>
 
           <TabsContent value="bulk" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle>Bulk URL Shortening</CardTitle>
+            {!subscribed ? (
+              <Card>
+                <CardHeader>
+                  <div className="text-center space-y-2">
+                    <Crown className="w-12 h-12 text-primary mx-auto" />
+                    <CardTitle>Encurtamento em Massa - Premium</CardTitle>
                     <CardDescription>
-                      Paste multiple URLs (one per line) to shorten them all at once
+                      Este recurso está disponível apenas para usuários Premium
                     </CardDescription>
                   </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="p-6 border-2 border-dashed border-muted-foreground/25 rounded-lg bg-muted/30">
+                    <div className="text-center space-y-4">
+                      <h3 className="text-lg font-semibold">Recursos Premium Inclusos:</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-primary rounded-full"></div>
+                          <span>Encurtamento em massa</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-primary rounded-full"></div>
+                          <span>Export de QR codes em massa</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-primary rounded-full"></div>
+                          <span>Analytics detalhados</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-primary rounded-full"></div>
+                          <span>Links ilimitados</span>
+                        </div>
+                      </div>
+                      <Button asChild size="lg" className="mt-4">
+                        <Link to="/subscription">
+                          <Crown className="w-4 h-4 mr-2" />
+                          Fazer Upgrade - R$ 9,90/mês
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <CardTitle>Bulk URL Shortening</CardTitle>
+                      <CardDescription>
+                        Paste multiple URLs (one per line) to shorten them all at once
+                      </CardDescription>
+                    </div>
+                    <Button
+                      onClick={downloadBulkQRCodes}
+                      disabled={urls.length === 0}
+                      variant="outline"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Export All QR Codes
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="bulk-urls">URLs to Shorten</Label>
+                    <Textarea
+                      id="bulk-urls"
+                      value={bulkUrls}
+                      onChange={(e) => setBulkUrls(e.target.value)}
+                      placeholder="https://example.com&#10;https://another-site.com&#10;https://third-site.com"
+                      rows={10}
+                    />
+                  </div>
                   <Button
-                    onClick={downloadBulkQRCodes}
-                    disabled={urls.length === 0}
-                    variant="outline"
+                    onClick={handleBulkShorten}
+                    disabled={!bulkUrls.trim() || processingBulk}
+                    className="w-full"
                   >
-                    <Download className="w-4 h-4 mr-2" />
-                    Export All QR Codes {!subscribed && '(Premium)'}
+                    <Plus className="w-4 h-4 mr-2" />
+                    {processingBulk ? "Processing..." : "Shorten All URLs"}
                   </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="bulk-urls">URLs to Shorten</Label>
-                  <Textarea
-                    id="bulk-urls"
-                    value={bulkUrls}
-                    onChange={(e) => setBulkUrls(e.target.value)}
-                    placeholder="https://example.com&#10;https://another-site.com&#10;https://third-site.com"
-                    rows={10}
-                  />
-                </div>
-                <Button
-                  onClick={handleBulkShorten}
-                  disabled={!bulkUrls.trim() || processingBulk}
-                  className="w-full"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  {processingBulk ? "Processing..." : "Shorten All URLs"}
-                </Button>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="subscription" className="space-y-4">
