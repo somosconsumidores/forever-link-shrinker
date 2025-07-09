@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/hooks/useLanguage';
+import { X } from 'lucide-react';
 
 const Auth = () => {
   const { user, signUp, signIn, resetPassword } = useAuth();
@@ -94,10 +95,20 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md relative">
+        <Button 
+          asChild
+          variant="ghost" 
+          size="icon"
+          className="absolute top-4 right-4 h-8 w-8 z-10"
+        >
+          <Link to="/">
+            <X className="h-4 w-4" />
+          </Link>
+        </Button>
         <CardHeader>
-          <CardTitle>Welcome to Minify-URL.com</CardTitle>
-          <CardDescription>Sign in to your account or create a new one</CardDescription>
+          <CardTitle>{t('welcomeTo')}</CardTitle>
+          <CardDescription>{t('signInDesc')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
