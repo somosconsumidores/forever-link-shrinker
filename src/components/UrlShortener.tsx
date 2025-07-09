@@ -61,7 +61,7 @@ export const UrlShortener = () => {
     await new Promise(resolve => setTimeout(resolve, 800));
 
     const id = generateShortId();
-    const shortened = `${window.location.origin}/${id}`;
+    const shortened = `https://short.ly/${id}`;
     
     const shortenedUrl: ShortenedUrl = {
       original: formattedUrl,
