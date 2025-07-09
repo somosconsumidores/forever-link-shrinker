@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Navigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useSubscriptionLimits } from '@/hooks/useSubscriptionLimits';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +28,7 @@ interface ShortenedUrl {
 
 const Dashboard = () => {
   const { user, signOut, loading: authLoading, subscribed, subscriptionTier } = useAuth();
+  const { checkUrlLimit, isFeatureAllowed, getRemainingUrls } = useSubscriptionLimits();
   const { toast } = useToast();
   const [urls, setUrls] = useState<ShortenedUrl[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,9 +73,9 @@ const Dashboard = () => {
   };
 
   const createShortUrl = async (originalUrl: string, customAlias?: string) => {
-    // Check if user has reached the limit
-    if (!subscribed && urls.length >= 50) {
-      throw new Error('Free users are limited to 50 URLs. Upgrade to Premium for unlimited URLs.');
+    // Check if user has reached the limit using the hook
+    if (!checkUrlLimit(urls.length)) {
+      throw new Error('Limite de links atingido. Faça upgrade para Premium.');
     }
     
     const shortCode = customAlias || generateShortCode();
@@ -101,6 +103,16 @@ const Dashboard = () => {
 
   const handleBulkShorten = async () => {
     if (!bulkUrls.trim()) return;
+
+    // Check if bulk shortening is allowed
+    if (!isFeatureAllowed('bulk_shorten')) {
+      toast({
+        title: "Recurso Premium",
+        description: "Encurtamento em massa está disponível apenas para usuários Premium.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setProcessingBulk(true);
     const urlList = bulkUrls.split('\n').filter(url => url.trim());
@@ -337,14 +349,25 @@ const Dashboard = () => {
         </div>
 
         {/* Premium Features Alert */}
-        {!subscribed && urls.length >= 50 && (
-          <Alert className="mb-6">
+        {!subscribed && (
+          <Alert className={`mb-6 ${urls.length >= 45 ? 'border-orange-200 bg-orange-50' : ''}`}>
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              You've reached the free limit of 50 URLs. 
-              <Link to="/subscription" className="underline ml-1">
-                Upgrade to Premium
-              </Link> to create unlimited URLs and unlock advanced features.
+              {urls.length >= 50 ? (
+                <>
+                  Você atingiu o limite gratuito de 50 URLs. 
+                  <Link to="/subscription" className="underline ml-1">
+                    Faça upgrade para Premium
+                  </Link> para criar links ilimitados e desbloquear recursos avançados.
+                </>
+              ) : (
+                <>
+                  Você pode criar mais {getRemainingUrls(urls.length)} links no plano gratuito.
+                  <Link to="/subscription" className="underline ml-1">
+                    Upgrade para Premium
+                  </Link> para links ilimitados e recursos avançados.
+                </>
+              )}
             </AlertDescription>
           </Alert>
         )}
@@ -445,15 +468,29 @@ const Dashboard = () => {
                                 </DialogContent>
                               </Dialog>
                               
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                asChild
-                              >
-                                <Link to={`/analytics/${url.short_code}`}>
+                              {isFeatureAllowed('analytics') ? (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  asChild
+                                >
+                                  <Link to={`/analytics/${url.short_code}`}>
+                                    <BarChart3 className="w-4 h-4" />
+                                  </Link>
+                                </Button>
+                              ) : (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => toast({
+                                    title: "Recurso Premium",
+                                    description: "Analytics detalhados estão disponíveis apenas para usuários Premium.",
+                                    variant: "destructive",
+                                  })}
+                                >
                                   <BarChart3 className="w-4 h-4" />
-                                </Link>
-                              </Button>
+                                </Button>
+                              )}
                               
                               <Button
                                 variant="outline"

@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, Copy, ExternalLink, Zap, Download, QrCode } from "lucide-react";
@@ -25,6 +26,7 @@ export const UrlShortener = () => {
   const [result, setResult] = useState<ShortenedUrl | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
+  const { getRemainingUrls } = useSubscriptionLimits();
   const { t } = useLanguage();
 
   const generateShortId = () => {
