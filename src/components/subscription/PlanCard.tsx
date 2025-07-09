@@ -128,7 +128,7 @@ export const PlanCard = ({ plan, isAnnual, index }: PlanCardProps) => {
               <span className="text-muted-foreground">{isAnnual ? t('perYear') : t('perMonth')}</span>
             )}
           </div>
-          {plan.annualPrice && (
+          {plan.annualPrice && isAnnual && (
             <p className="text-sm text-muted-foreground">{getYearlyPrice(plan)}</p>
           )}
         </div>
