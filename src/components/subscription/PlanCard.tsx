@@ -77,6 +77,7 @@ export const PlanCard = ({ plan, isAnnual, index }: PlanCardProps) => {
     const isBrazilian = localStorage.getItem('language') === 'pt';
     
     if (isBrazilian && plan.monthlyPriceBR && plan.annualPriceBR) {
+      // For annual mode, show annual price; for monthly, show monthly price
       const price = isAnnual ? plan.annualPriceBR : plan.monthlyPriceBR;
       return `R$ ${price.toFixed(2).replace('.', ',')}`;
     }
@@ -91,9 +92,13 @@ export const PlanCard = ({ plan, isAnnual, index }: PlanCardProps) => {
     // Check if current language is Portuguese-BR using the hook
     const isBrazilian = localStorage.getItem('language') === 'pt';
     
-    if (isBrazilian && plan.annualPriceBR) {
-      const yearlyPrice = plan.annualPriceBR * 12;
-      return `(R$ ${yearlyPrice.toFixed(2).replace('.', ',')} ${t('perYear')} )`;
+    if (isBrazilian && plan.monthlyPriceBR && plan.annualPriceBR) {
+      // For annual mode, show monthly price as reference; for monthly mode, show yearly savings
+      if (isAnnual) {
+        return `(R$ ${plan.monthlyPriceBR.toFixed(2).replace('.', ',')} / mês)`;
+      } else {
+        return `(R$ ${plan.annualPriceBR.toFixed(2).replace('.', ',')} ${t('perYear')} )`;
+      }
     }
     
     return `($${plan.annualPrice.toFixed(2)} ${t('perYear')} )`;
@@ -117,10 +122,12 @@ export const PlanCard = ({ plan, isAnnual, index }: PlanCardProps) => {
           <div className="flex items-baseline gap-1">
             <span className="text-3xl font-bold">{getPrice(plan)}</span>
             {plan.monthlyPrice && (
-              <span className="text-muted-foreground">{t('perMonth')}</span>
+              <span className="text-muted-foreground">
+                {isAnnual ? ' / ano' : t('perMonth')}
+              </span>
             )}
           </div>
-          {plan.annualPrice && isAnnual && (
+          {plan.annualPrice && (
             <p className="text-sm text-muted-foreground">{getYearlyPrice(plan)}</p>
           )}
         </div>
