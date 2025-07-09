@@ -3,20 +3,10 @@ import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useAuth } from '@/hooks/useAuth';
 import { Link } from 'react-router-dom';
+import { Plan } from '@/utils/planData';
 
 interface PlanCardProps {
-  plan: {
-    name: string;
-    monthlyPrice: number | null;
-    annualPrice: number | null;
-    links: string;
-    clicks: string;
-    features: string[];
-    description: string;
-    additionalInfo: string;
-    buttonText: string;
-    popular: boolean;
-  };
+  plan: Plan;
   isAnnual: boolean;
   index: number;
 }
@@ -27,12 +17,32 @@ export const PlanCard = ({ plan, isAnnual, index }: PlanCardProps) => {
 
   const getPrice = (plan: PlanCardProps['plan']) => {
     if (plan.monthlyPrice === null) return t('custom');
+    
+    // Check if current language is Portuguese-BR
+    const currentLanguage = localStorage.getItem('language') || 'en';
+    const isBrazilian = currentLanguage === 'pt-BR';
+    
+    if (isBrazilian && plan.monthlyPriceBR && plan.annualPriceBR) {
+      const price = isAnnual ? plan.annualPriceBR : plan.monthlyPriceBR;
+      return `R$ ${price.toFixed(2).replace('.', ',')}`;
+    }
+    
     const price = isAnnual ? plan.annualPrice! / 12 : plan.monthlyPrice;
     return `$${price.toFixed(2)}`;
   };
 
   const getYearlyPrice = (plan: PlanCardProps['plan']) => {
     if (plan.annualPrice === null) return '';
+    
+    // Check if current language is Portuguese-BR
+    const currentLanguage = localStorage.getItem('language') || 'en';
+    const isBrazilian = currentLanguage === 'pt-BR';
+    
+    if (isBrazilian && plan.annualPriceBR) {
+      const yearlyPrice = plan.annualPriceBR * 12;
+      return `(R$ ${yearlyPrice.toFixed(2).replace('.', ',')} ${t('perYear')} )`;
+    }
+    
     return `($${plan.annualPrice.toFixed(2)} ${t('perYear')} )`;
   };
 
