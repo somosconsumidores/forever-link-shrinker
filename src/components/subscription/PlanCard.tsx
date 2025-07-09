@@ -4,6 +4,8 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { useAuth } from '@/hooks/useAuth';
 import { Link } from 'react-router-dom';
 import { Plan } from '@/utils/planData';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface PlanCardProps {
   plan: Plan;
@@ -14,6 +16,48 @@ interface PlanCardProps {
 export const PlanCard = ({ plan, isAnnual, index }: PlanCardProps) => {
   const { t } = useLanguage();
   const { user } = useAuth();
+
+  const handleSubscribe = async () => {
+    if (!user) {
+      toast.error('Você precisa estar logado para assinar um plano');
+      return;
+    }
+
+    if (plan.name === 'Enterprise') {
+      return; // Enterprise plan doesn't have checkout
+    }
+
+    // Get the correct price ID based on language and billing period
+    const isBrazilian = localStorage.getItem('language') === 'pt';
+    let priceId: string | undefined;
+
+    if (isBrazilian && plan.stripePriceIds) {
+      priceId = isAnnual ? plan.stripePriceIds.annual : plan.stripePriceIds.monthly;
+    } else if (plan.stripePriceIds) {
+      // For non-Brazilian users, you might want to add USD price IDs later
+      priceId = isAnnual ? plan.stripePriceIds.annual : plan.stripePriceIds.monthly;
+    }
+
+    if (!priceId) {
+      toast.error('Price ID não encontrado para este plano');
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { priceId }
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (error) {
+      console.error('Erro ao criar checkout:', error);
+      toast.error('Erro ao processar pagamento. Tente novamente.');
+    }
+  };
 
   const getPrice = (plan: PlanCardProps['plan']) => {
     if (plan.monthlyPrice === null) return t('custom');
@@ -97,14 +141,13 @@ export const PlanCard = ({ plan, isAnnual, index }: PlanCardProps) => {
       <CardFooter>
         <Button 
           className={`w-full ${plan.popular ? 'bg-primary hover:bg-primary/90' : 'bg-green-600 hover:bg-green-700'} text-white`}
-          asChild={plan.name !== 'Enterprise'}
+          onClick={plan.name === 'Enterprise' ? undefined : handleSubscribe}
+          asChild={plan.name === 'Enterprise'}
         >
           {plan.name === 'Enterprise' ? (
             <span>{plan.buttonText}</span>
           ) : (
-            <Link to={user ? "/dashboard" : "/auth"}>
-              {plan.buttonText}
-            </Link>
+            plan.buttonText
           )}
         </Button>
       </CardFooter>

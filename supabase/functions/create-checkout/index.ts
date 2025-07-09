@@ -25,6 +25,16 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
+    // Get request body to extract price ID
+    const body = await req.json();
+    const { priceId } = body;
+    
+    if (!priceId) {
+      throw new Error("Price ID is required");
+    }
+    
+    logStep("Price ID received", { priceId });
+
     const authHeader = req.headers.get("Authorization")!;
     const token = authHeader.replace("Bearer ", "");
     const { data } = await supabaseClient.auth.getUser(token);
@@ -52,15 +62,7 @@ serve(async (req) => {
       customer_email: customerId ? undefined : user.email,
       line_items: [
         {
-          price_data: {
-            currency: "usd",
-            product_data: { 
-              name: "Premium Subscription",
-              description: "Advanced analytics, branded links, higher limits, and bulk QR exports"
-            },
-            unit_amount: 990, // $9.90 in cents
-            recurring: { interval: "month" },
-          },
+          price: priceId,
           quantity: 1,
         },
       ],
