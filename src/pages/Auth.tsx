@@ -17,7 +17,7 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
 
   if (user) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/subscription" replace />;
   }
 
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
