@@ -136,7 +136,7 @@ const translations = {
     description: 'Transforme URLs longas e complexas em links curtos e compartilháveis instantaneamente. Não é necessário cadastro, os links nunca expiram.',
     enterUrl: 'Digite sua URL longa aqui...',
     shorten: 'Encurtar',
-    customEnding: 'Terminação personalizada (opcional):',
+    customEnding: 'nome-personalizado',
     customName: 'nome-personalizado',
     
     // Results
