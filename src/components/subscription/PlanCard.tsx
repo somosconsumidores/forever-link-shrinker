@@ -91,8 +91,9 @@ export const PlanCard = ({ plan, isAnnual, index }: PlanCardProps) => {
     // Check if current language is Portuguese-BR using the hook
     const isBrazilian = localStorage.getItem('language') === 'pt';
     
-    if (isBrazilian && plan.monthlyPriceBR && isAnnual) {
-      return `(R$ ${plan.monthlyPriceBR.toFixed(2).replace('.', ',')} ${t('perMonth')} )`;
+    if (isBrazilian && plan.annualPriceBR && isAnnual) {
+      const monthlyPrice = plan.annualPriceBR / 12;
+      return `(R$ ${monthlyPrice.toFixed(2).replace('.', ',')} ${t('perMonth')} )`;
     }
     
     if (isAnnual) {
