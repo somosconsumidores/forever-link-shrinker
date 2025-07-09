@@ -221,7 +221,7 @@ export const UrlShortener = () => {
     setIsLoading(true);
 
     try {
-      const shortened = `https://short.ly/${finalId}`;
+      const shortened = `${window.location.origin}/${finalId}`;
       
       // Generate QR code
       const qrCode = await generateQRCode(shortened);
@@ -386,7 +386,7 @@ export const UrlShortener = () => {
                 </div>
                 <div className="flex-1 relative max-w-md">
                   <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-sm">
-                    short.ly/
+                    {window.location.host}/
                   </span>
                   <Input
                     type="text"

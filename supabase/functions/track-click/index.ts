@@ -109,6 +109,7 @@ const handler = async (req: Request): Promise<Response> => {
       
       // Validate shortCode format
       if (!shortCode || !/^[a-zA-Z0-9-]+$/.test(shortCode)) {
+        console.error('Invalid short code:', shortCode);
         return new Response(
           JSON.stringify({ error: 'Invalid short code format' }),
           { 
@@ -118,6 +119,8 @@ const handler = async (req: Request): Promise<Response> => {
         );
       }
 
+      console.log('Looking for short code:', shortCode);
+
       // Get the original URL
       const { data: urlData, error: urlError } = await supabase
         .from('shortened_urls')
@@ -125,7 +128,10 @@ const handler = async (req: Request): Promise<Response> => {
         .eq('short_code', shortCode)
         .single();
 
+      console.log('Database query result:', { urlData, urlError });
+
       if (urlError || !urlData) {
+        console.error('Short URL not found:', shortCode, urlError);
         return new Response(
           JSON.stringify({ error: 'Short URL not found' }),
           { 

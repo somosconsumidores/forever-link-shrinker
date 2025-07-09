@@ -144,7 +144,7 @@ const Analytics = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-muted-foreground">Short URL</label>
-                <p className="text-primary font-mono">short.ly/{urlData.short_code}</p>
+                <p className="text-primary font-mono">{window.location.host}/{urlData.short_code}</p>
               </div>
               <div>
                 <label className="text-sm font-medium text-muted-foreground">Original URL</label>

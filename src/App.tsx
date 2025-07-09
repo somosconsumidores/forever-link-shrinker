@@ -29,10 +29,11 @@ const App = () => (
             <Route path="/subscription" element={<Subscription />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/analytics/:id" element={<Analytics />} />
+            {/* Short URL redirect handler - must be after all specific routes */}
             <Route path="/:id" element={<RedirectHandler />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            {/* 404 catch-all route - must be last */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
           </LanguageProvider>
         </BrowserRouter>
       </TooltipProvider>

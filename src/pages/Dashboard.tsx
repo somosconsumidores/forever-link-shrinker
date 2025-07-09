@@ -241,7 +241,7 @@ const Dashboard = () => {
       // Generate all QR codes
       for (const url of urls) {
         await downloadQRCode(
-          `https://short.ly/${url.short_code}`,
+          `${window.location.origin}/${url.short_code}`,
           url.custom_alias || url.short_code
         );
         // Small delay to prevent browser from blocking downloads
@@ -440,12 +440,12 @@ const Dashboard = () => {
                         <TableRow key={url.id}>
                           <TableCell>
                             <a
-                              href={`https://short.ly/${url.short_code}`}
+                              href={`${window.location.origin}/${url.short_code}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-primary hover:underline"
                             >
-                              short.ly/{url.short_code}
+                              {window.location.host}/{url.short_code}
                             </a>
                           </TableCell>
                           <TableCell className="max-w-xs truncate">
@@ -528,7 +528,7 @@ const Dashboard = () => {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => downloadQRCode(
-                                  `https://short.ly/${url.short_code}`,
+                                  `${window.location.origin}/${url.short_code}`,
                                   url.custom_alias || url.short_code
                                 )}
                               >
