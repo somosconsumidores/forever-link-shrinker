@@ -423,11 +423,14 @@ export const UrlShortener = () => {
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button 
+                  asChild
                   variant="hero" 
                   size="lg"
                   className="h-12 px-8"
                 >
-                  {t('viewPlans')}
+                  <RouterLink to="/subscription">
+                    {t('viewPlans')}
+                  </RouterLink>
                 </Button>
                 <Button 
                   asChild
