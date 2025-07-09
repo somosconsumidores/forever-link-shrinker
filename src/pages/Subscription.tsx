@@ -134,13 +134,6 @@ const Subscription = () => {
                     )}
                   </div>
                   
-                  <div className="flex items-center gap-2 text-sm">
-                    <div className="flex-1 bg-gradient-primary h-2 rounded-full relative">
-                      <div className="absolute right-2 top-0 transform translate-y-[-50%] bg-background px-2 py-1 rounded text-xs font-medium">
-                        {index === 0 ? '50K+' : index === 1 ? '5M+' : ''}
-                      </div>
-                    </div>
-                  </div>
                   
                   <div className="text-center">
                     <p className="font-medium">{plan.links} Links {plan.clicks && `with ${plan.clicks}`}</p>
