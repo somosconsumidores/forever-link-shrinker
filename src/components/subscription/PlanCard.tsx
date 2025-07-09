@@ -14,7 +14,7 @@ interface PlanCardProps {
 }
 
 export const PlanCard = ({ plan, isAnnual, index }: PlanCardProps) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user } = useAuth();
 
   const handleSubscribe = async () => {
@@ -28,7 +28,7 @@ export const PlanCard = ({ plan, isAnnual, index }: PlanCardProps) => {
     }
 
     // Get the correct price ID based on language and billing period
-    const isBrazilian = localStorage.getItem('language') === 'pt';
+    const isBrazilian = language === 'pt';
     let priceId: string | undefined;
 
     if (isBrazilian && plan.stripePriceIds) {
@@ -74,7 +74,7 @@ export const PlanCard = ({ plan, isAnnual, index }: PlanCardProps) => {
     if (plan.monthlyPrice === null) return t('custom');
     
     // Check if current language is Portuguese-BR using the hook
-    const isBrazilian = localStorage.getItem('language') === 'pt';
+    const isBrazilian = language === 'pt';
     
     if (isBrazilian && plan.monthlyPriceBR && plan.annualPriceBR) {
       const price = isAnnual ? plan.annualPriceBR : plan.monthlyPriceBR;
@@ -89,7 +89,7 @@ export const PlanCard = ({ plan, isAnnual, index }: PlanCardProps) => {
     if (plan.annualPrice === null) return '';
     
     // Check if current language is Portuguese-BR using the hook
-    const isBrazilian = localStorage.getItem('language') === 'pt';
+    const isBrazilian = language === 'pt';
     
     if (isBrazilian && plan.annualPriceBR && isAnnual) {
       const monthlyPrice = plan.annualPriceBR / 12;
