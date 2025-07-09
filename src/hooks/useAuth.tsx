@@ -118,6 +118,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
+    // Reset subscription state on logout
+    setSubscribed(false);
+    setSubscriptionTier(null);
+    setSubscriptionEnd(null);
     return { error };
   };
 
