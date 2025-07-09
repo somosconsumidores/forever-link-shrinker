@@ -576,7 +576,7 @@ const Dashboard = () => {
                       <Button asChild size="lg" className="mt-4">
                         <Link to="/subscription">
                           <Crown className="w-4 h-4 mr-2" />
-                          Fazer Upgrade - R$ 9,90/mês
+                          Upgrade to Premium
                         </Link>
                       </Button>
                     </div>
