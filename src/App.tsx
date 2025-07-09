@@ -8,6 +8,7 @@ import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Analytics from "./pages/Analytics";
+import Subscription from "./pages/Subscription";
 import { RedirectHandler } from "@/components/RedirectHandler";
 import { AuthProvider } from "@/hooks/useAuth";
 
@@ -24,6 +25,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/subscription" element={<Subscription />} />
             <Route path="/analytics/:id" element={<Analytics />} />
             <Route path="/:id" element={<RedirectHandler />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

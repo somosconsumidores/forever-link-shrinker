@@ -11,7 +11,9 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Pencil, Trash2, Download, LogOut, Plus, Eye, BarChart3 } from 'lucide-react';
+import { Pencil, Trash2, Download, LogOut, Plus, Eye, BarChart3, Crown, AlertTriangle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import QRCode from 'qrcode';
 
 interface ShortenedUrl {
@@ -24,7 +26,7 @@ interface ShortenedUrl {
 }
 
 const Dashboard = () => {
-  const { user, signOut, loading: authLoading } = useAuth();
+  const { user, signOut, loading: authLoading, subscribed, subscriptionTier } = useAuth();
   const { toast } = useToast();
   const [urls, setUrls] = useState<ShortenedUrl[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,6 +71,11 @@ const Dashboard = () => {
   };
 
   const createShortUrl = async (originalUrl: string, customAlias?: string) => {
+    // Check if user has reached the limit
+    if (!subscribed && urls.length >= 50) {
+      throw new Error('Free users are limited to 50 URLs. Upgrade to Premium for unlimited URLs.');
+    }
+    
     const shortCode = customAlias || generateShortCode();
     
     const { data, error } = await supabase
@@ -199,6 +206,49 @@ const Dashboard = () => {
     }
   };
 
+  const downloadBulkQRCodes = async () => {
+    if (!subscribed) {
+      toast({
+        title: "Premium Feature",
+        description: "Bulk QR code export is available for Premium users only.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (urls.length === 0) {
+      toast({
+        title: "No URLs",
+        description: "You don't have any URLs to export QR codes for.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Generate all QR codes
+      for (const url of urls) {
+        await downloadQRCode(
+          `https://short.ly/${url.short_code}`,
+          url.custom_alias || url.short_code
+        );
+        // Small delay to prevent browser from blocking downloads
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+
+      toast({
+        title: "Success",
+        description: `Downloaded ${urls.length} QR codes`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to download QR codes",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleSignOut = async () => {
     await signOut();
   };
@@ -211,14 +261,32 @@ const Dashboard = () => {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto p-6">
         <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold">Dashboard</h1>
-            <p className="text-muted-foreground">Manage your shortened URLs</p>
+          <div className="flex items-center gap-4">
+            <div>
+              <h1 className="text-3xl font-bold">Dashboard</h1>
+              <p className="text-muted-foreground">Manage your shortened URLs</p>
+            </div>
+            {subscribed && (
+              <Badge variant="default" className="bg-primary">
+                <Crown className="w-3 h-3 mr-1" />
+                {subscriptionTier}
+              </Badge>
+            )}
           </div>
-          <Button onClick={handleSignOut} variant="outline">
-            <LogOut className="w-4 h-4 mr-2" />
-            Sign Out
-          </Button>
+          <div className="flex items-center gap-2">
+            {!subscribed && (
+              <Button asChild variant="default">
+                <Link to="/subscription">
+                  <Crown className="w-4 h-4 mr-2" />
+                  Upgrade to Premium
+                </Link>
+              </Button>
+            )}
+            <Button onClick={handleSignOut} variant="outline">
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
         </div>
 
         {/* Metrics Widgets */}
@@ -268,10 +336,24 @@ const Dashboard = () => {
           </Card>
         </div>
 
+        {/* Premium Features Alert */}
+        {!subscribed && urls.length >= 50 && (
+          <Alert className="mb-6">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              You've reached the free limit of 50 URLs. 
+              <Link to="/subscription" className="underline ml-1">
+                Upgrade to Premium
+              </Link> to create unlimited URLs and unlock advanced features.
+            </AlertDescription>
+          </Alert>
+        )}
+
         <Tabs defaultValue="urls" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="urls">My URLs</TabsTrigger>
             <TabsTrigger value="bulk">Bulk Shorten</TabsTrigger>
+            <TabsTrigger value="subscription">Subscription</TabsTrigger>
           </TabsList>
 
           <TabsContent value="urls" className="space-y-4">
@@ -405,10 +487,22 @@ const Dashboard = () => {
           <TabsContent value="bulk" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Bulk URL Shortening</CardTitle>
-                <CardDescription>
-                  Paste multiple URLs (one per line) to shorten them all at once
-                </CardDescription>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle>Bulk URL Shortening</CardTitle>
+                    <CardDescription>
+                      Paste multiple URLs (one per line) to shorten them all at once
+                    </CardDescription>
+                  </div>
+                  <Button
+                    onClick={downloadBulkQRCodes}
+                    disabled={urls.length === 0}
+                    variant="outline"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Export All QR Codes {!subscribed && '(Premium)'}
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -429,6 +523,77 @@ const Dashboard = () => {
                   <Plus className="w-4 h-4 mr-2" />
                   {processingBulk ? "Processing..." : "Shorten All URLs"}
                 </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="subscription" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Crown className="w-5 h-5" />
+                  Subscription Management
+                </CardTitle>
+                <CardDescription>
+                  Manage your premium subscription and access advanced features
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {subscribed ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 bg-primary/5 rounded-lg border border-primary/20">
+                      <div>
+                        <h3 className="font-semibold flex items-center gap-2">
+                          <Badge variant="default" className="bg-primary">
+                            {subscriptionTier}
+                          </Badge>
+                          Active Subscription
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          Unlimited URLs, advanced analytics, and premium features
+                        </p>
+                      </div>
+                      <Button asChild>
+                        <Link to="/subscription">
+                          <Crown className="w-4 h-4 mr-2" />
+                          Manage Subscription
+                        </Link>
+                      </Button>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="p-4 border rounded-lg">
+                        <h4 className="font-medium text-sm mb-2">Current Usage</h4>
+                        <p className="text-2xl font-bold">{urls.length}</p>
+                        <p className="text-sm text-muted-foreground">URLs Created</p>
+                      </div>
+                      <div className="p-4 border rounded-lg">
+                        <h4 className="font-medium text-sm mb-2">Total Clicks</h4>
+                        <p className="text-2xl font-bold">{urls.reduce((sum, url) => sum + url.click_count, 0)}</p>
+                        <p className="text-sm text-muted-foreground">Across All URLs</p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center space-y-4">
+                    <div className="p-6 border-2 border-dashed border-muted-foreground/25 rounded-lg">
+                      <Crown className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold mb-2">Upgrade to Premium</h3>
+                      <p className="text-muted-foreground mb-4">
+                        Unlock unlimited URLs, advanced analytics, branded links, and bulk QR exports
+                      </p>
+                      <div className="text-sm text-muted-foreground mb-4">
+                        Free Plan: {urls.length}/50 URLs used
+                      </div>
+                      <Button asChild size="lg">
+                        <Link to="/subscription">
+                          <Crown className="w-4 h-4 mr-2" />
+                          Upgrade to Premium - $9.90/month
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
