@@ -17,12 +17,12 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <LanguageProvider>
-      <AuthProvider>
+    <AuthProvider>
       <TooltipProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <LanguageProvider>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
@@ -31,12 +31,12 @@ const App = () => (
             <Route path="/analytics/:id" element={<Analytics />} />
             <Route path="/:id" element={<RedirectHandler />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </LanguageProvider>
         </BrowserRouter>
       </TooltipProvider>
-      </AuthProvider>
-    </LanguageProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
