@@ -221,6 +221,53 @@ const Dashboard = () => {
           </Button>
         </div>
 
+        {/* Metrics Widgets */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Total Links</p>
+                  <p className="text-2xl font-bold">{urls.length}</p>
+                </div>
+                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Plus className="h-4 w-4 text-primary" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Total Clicks</p>
+                  <p className="text-2xl font-bold">{urls.reduce((sum, url) => sum + url.click_count, 0)}</p>
+                </div>
+                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Eye className="h-4 w-4 text-primary" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Avg. Clicks/Link</p>
+                  <p className="text-2xl font-bold">
+                    {urls.length > 0 ? (urls.reduce((sum, url) => sum + url.click_count, 0) / urls.length).toFixed(1) : '0'}
+                  </p>
+                </div>
+                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <BarChart3 className="h-4 w-4 text-primary" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         <Tabs defaultValue="urls" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="urls">My URLs</TabsTrigger>
