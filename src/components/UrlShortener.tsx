@@ -386,14 +386,14 @@ export const UrlShortener = () => {
                 </div>
                 <div className="flex-1 relative max-w-md">
                   <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-sm">
-                    {window.location.host}/
+                    /
                   </span>
                   <Input
                     type="text"
                     placeholder={t('customName')}
                     value={customId}
                     onChange={(e) => setCustomId(e.target.value)}
-                    className="pl-20 h-10 text-sm bg-background/50 border-border/50 focus:border-primary/50 transition-all"
+                    className="pl-6 h-10 text-sm bg-background/50 border-border/50 focus:border-primary/50 transition-all"
                     disabled={isLoading}
                   />
                 </div>
