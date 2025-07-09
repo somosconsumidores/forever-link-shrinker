@@ -11,13 +11,23 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { X } from 'lucide-react';
 
 const Auth = () => {
-  const { user, signUp, signIn, resetPassword } = useAuth();
+  const { user, signUp, signIn, resetPassword, subscribed, subscriptionLoading } = useAuth();
   const { toast } = useToast();
   const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
 
   if (user) {
-    return <Navigate to="/subscription" replace />;
+    // If still loading subscription info, wait
+    if (subscriptionLoading) {
+      return (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">Carregando...</div>
+        </div>
+      );
+    }
+    
+    // Redirect to dashboard if user has paid plan, otherwise to subscription page
+    return <Navigate to={subscribed ? "/dashboard" : "/subscription"} replace />;
   }
 
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
