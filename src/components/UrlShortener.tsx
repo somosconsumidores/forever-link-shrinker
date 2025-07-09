@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 import { useLanguage } from "@/hooks/useLanguage";
+import { urlShortenLimiter, authenticatedLimiter } from "@/utils/rateLimit";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, Copy, ExternalLink, Zap, Download, QrCode } from "lucide-react";
 import { Link as RouterLink } from "react-router-dom";
@@ -43,9 +44,25 @@ export const UrlShortener = () => {
         .single();
       return !!data;
     } else {
-      // Check in localStorage for anonymous users
+      // Check in localStorage for anonymous users and clean expired entries
       const stored = localStorage.getItem("shortenedUrls");
       const urls = stored ? JSON.parse(stored) : {};
+      
+      // Clean expired entries
+      const currentTime = Date.now();
+      let hasExpired = false;
+      Object.keys(urls).forEach(key => {
+        const url = urls[key];
+        if (url.expires && url.expires < currentTime) {
+          delete urls[key];
+          hasExpired = true;
+        }
+      });
+      
+      if (hasExpired) {
+        localStorage.setItem("shortenedUrls", JSON.stringify(urls));
+      }
+      
       return urls[id] !== undefined;
     }
   };
@@ -68,7 +85,46 @@ export const UrlShortener = () => {
 
   const isValidUrl = (string: string) => {
     try {
-      new URL(string);
+      // Input validation and sanitization
+      if (!string || typeof string !== 'string') return false;
+      
+      // Length limit (2000 chars is reasonable for URLs)
+      if (string.length > 2000) return false;
+      
+      const url = new URL(string);
+      
+      // Block dangerous protocols
+      const allowedProtocols = ['http:', 'https:'];
+      if (!allowedProtocols.includes(url.protocol)) {
+        return false;
+      }
+      
+      // Block localhost and private IP ranges in production
+      const hostname = url.hostname.toLowerCase();
+      if (hostname === 'localhost' || 
+          hostname === '127.0.0.1' || 
+          hostname.startsWith('192.168.') || 
+          hostname.startsWith('10.') || 
+          hostname.match(/^172\.(1[6-9]|2[0-9]|3[0-1])\./) ||
+          hostname === '::1') {
+        // Allow these only in development
+        const isDev = window.location.hostname === 'localhost';
+        if (!isDev) return false;
+      }
+      
+      // Block known malicious patterns
+      const suspiciousPatterns = [
+        /javascript:/i,
+        /data:/i,
+        /vbscript:/i,
+        /file:/i,
+        /ftp:/i
+      ];
+      
+      if (suspiciousPatterns.some(pattern => pattern.test(string))) {
+        return false;
+      }
+      
       return true;
     } catch (_) {
       return false;
@@ -76,6 +132,20 @@ export const UrlShortener = () => {
   };
 
   const shortenUrl = async () => {
+    // Rate limiting check
+    const limiter = user ? authenticatedLimiter : urlShortenLimiter;
+    const identifier = user?.id || 'anonymous';
+    const rateCheck = limiter.checkLimit(identifier);
+    
+    if (!rateCheck.allowed) {
+      toast({
+        title: "Rate limit exceeded",
+        description: `Please wait ${rateCheck.retryAfter} seconds before trying again`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!url.trim()) {
       toast({
         title: t('pleaseEnterUrl'),
@@ -99,14 +169,35 @@ export const UrlShortener = () => {
       return;
     }
 
-    // Validate custom ID
+    // Validate custom ID with enhanced security
     let finalId = customId.trim();
     if (finalId) {
-      // Only allow alphanumeric characters and hyphens
+      // Length limit for custom aliases
+      if (finalId.length > 50) {
+        toast({
+          title: t('customEndingTooLong'),
+          description: 'Custom ending must be 50 characters or less',
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Only allow alphanumeric characters and hyphens, no special characters
       if (!/^[a-zA-Z0-9-]+$/.test(finalId)) {
         toast({
           title: t('invalidCustomEnding'),
           description: t('onlyAlphanumeric'),
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Block reserved words and potentially dangerous patterns
+      const reservedWords = ['admin', 'api', 'www', 'mail', 'ftp', 'localhost', 'dashboard', 'auth', 'login', 'signup', 'analytics'];
+      if (reservedWords.includes(finalId.toLowerCase())) {
+        toast({
+          title: t('customEndingReserved'),
+          description: 'This custom ending is reserved',
           variant: "destructive",
         });
         return;
@@ -163,10 +254,21 @@ export const UrlShortener = () => {
           description: t('urlSavedToDashboard'),
         });
       } else {
-        // Store in localStorage for anonymous users
+        // Store in localStorage for anonymous users with encryption-like obfuscation
         const stored = localStorage.getItem("shortenedUrls");
         const urls = stored ? JSON.parse(stored) : {};
-        urls[finalId] = shortenedUrl;
+        
+        // Add expiration for anonymous URLs (24 hours)
+        const expirationTime = Date.now() + (24 * 60 * 60 * 1000);
+        const secureUrl = {
+          ...shortenedUrl,
+          expires: expirationTime,
+          // Basic obfuscation (not real encryption but better than plain text)
+          original: btoa(shortenedUrl.original),
+          _secure: true
+        };
+        
+        urls[finalId] = secureUrl;
         localStorage.setItem("shortenedUrls", JSON.stringify(urls));
 
         toast({
