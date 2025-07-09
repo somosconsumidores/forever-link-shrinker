@@ -17,7 +17,32 @@ export const RedirectHandler = () => {
       }
 
       try {
-        // Track the click using the edge function
+        console.log('Attempting to redirect short URL:', id);
+        
+        // First check localStorage for anonymous URLs
+        const stored = localStorage.getItem("shortenedUrls");
+        if (stored) {
+          const urls = JSON.parse(stored);
+          const localUrl = urls[id];
+          
+          if (localUrl && localUrl._secure) {
+            // Check expiration
+            if (localUrl.expires && Date.now() > localUrl.expires) {
+              console.log('Anonymous URL expired:', id);
+              setError('This short URL has expired');
+              setLoading(false);
+              return;
+            }
+            
+            // Decode the obfuscated URL
+            const originalUrl = atob(localUrl.original);
+            console.log('Found in localStorage, redirecting to:', originalUrl);
+            window.location.href = originalUrl;
+            return;
+          }
+        }
+
+        // Track the click using the edge function for database URLs
         const { data, error } = await supabase.functions.invoke('track-click', {
           body: {
             shortCode: id,
@@ -29,12 +54,17 @@ export const RedirectHandler = () => {
 
         if (error) {
           console.error('Error tracking click:', error);
+          setError('Short URL not found');
+          setLoading(false);
+          return;
         }
 
         if (data?.originalUrl) {
+          console.log('Found in database, redirecting to:', data.originalUrl);
           // Redirect to the original URL
           window.location.href = data.originalUrl;
         } else {
+          console.log('Short URL not found in database or localStorage:', id);
           setError('Short URL not found');
         }
       } catch (error) {
