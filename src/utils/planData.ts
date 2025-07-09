@@ -25,7 +25,7 @@ export const createPlans = (t: (key: string) => string): Plan[] => [
     monthlyPrice: 9.99,
     annualPrice: 119.88,
     monthlyPriceBR: 12.90,
-    annualPriceBR: 119.90,
+    annualPriceBR: 9.90,
     stripePriceIds: {
       monthly: 'price_1RizImGO9Xgz4FfVSAOaPZZr', // BR monthly
       annual: 'price_1Rj1ycGO9Xgz4FfVl7Cm3PoN', // BR annual
@@ -49,7 +49,7 @@ export const createPlans = (t: (key: string) => string): Plan[] => [
     monthlyPrice: 99.00,
     annualPrice: 1188.00,
     monthlyPriceBR: 129.90,
-    annualPriceBR: 1199.90,
+    annualPriceBR: 99.90,
     stripePriceIds: {
       monthly: 'price_1Rj21tGO9Xgz4FfVaNmVp04z', // BR monthly
       annual: 'price_1Rj22cGO9Xgz4FfV5WOsu8fe', // BR annual
