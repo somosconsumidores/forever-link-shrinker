@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, Copy, ExternalLink, Zap, Download, QrCode } from "lucide-react";
 import QRCode from "qrcode";
@@ -23,6 +24,7 @@ export const UrlShortener = () => {
   const [result, setResult] = useState<ShortenedUrl | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
+  const { t } = useLanguage();
 
   const generateShortId = () => {
     return Math.random().toString(36).substring(2, 8);
@@ -73,8 +75,8 @@ export const UrlShortener = () => {
   const shortenUrl = async () => {
     if (!url.trim()) {
       toast({
-        title: "Please enter a URL",
-        description: "Enter a valid URL to shorten",
+        title: t('pleaseEnterUrl'),
+        description: t('enterValidUrl'),
         variant: "destructive",
       });
       return;
@@ -87,8 +89,8 @@ export const UrlShortener = () => {
 
     if (!isValidUrl(formattedUrl)) {
       toast({
-        title: "Invalid URL",
-        description: "Please enter a valid URL",
+        title: t('invalidUrl'),
+        description: t('pleaseEnterValidUrl'),
         variant: "destructive",
       });
       return;
@@ -100,8 +102,8 @@ export const UrlShortener = () => {
       // Only allow alphanumeric characters and hyphens
       if (!/^[a-zA-Z0-9-]+$/.test(finalId)) {
         toast({
-          title: "Invalid custom ending",
-          description: "Only letters, numbers, and hyphens are allowed",
+          title: t('invalidCustomEnding'),
+          description: t('onlyAlphanumeric'),
           variant: "destructive",
         });
         return;
@@ -109,8 +111,8 @@ export const UrlShortener = () => {
 
       if (await isIdTaken(finalId)) {
         toast({
-          title: "Custom ending unavailable",
-          description: "This custom ending is already taken. Please try another.",
+          title: t('customEndingUnavailable'),
+          description: t('customEndingTaken'),
           variant: "destructive",
         });
         return;
@@ -154,8 +156,8 @@ export const UrlShortener = () => {
         }
 
         toast({
-          title: "URL shortened successfully!",
-          description: "URL saved to your dashboard",
+          title: t('urlShortenedSuccess'),
+          description: t('urlSavedToDashboard'),
         });
       } else {
         // Store in localStorage for anonymous users
@@ -165,16 +167,16 @@ export const UrlShortener = () => {
         localStorage.setItem("shortenedUrls", JSON.stringify(urls));
 
         toast({
-          title: "URL shortened successfully!",
-          description: "Sign in to save and manage your URLs",
+          title: t('urlShortenedSuccess'),
+          description: t('signInToSave'),
         });
       }
 
       setResult(shortenedUrl);
     } catch (error: any) {
       toast({
-        title: "Error",
-        description: error.message || "Failed to shorten URL",
+        title: t('error'),
+        description: error.message || t('failedToShortenUrl'),
         variant: "destructive",
       });
     } finally {
@@ -186,13 +188,13 @@ export const UrlShortener = () => {
     try {
       await navigator.clipboard.writeText(text);
       toast({
-        title: "Copied to clipboard!",
-        description: "The shortened URL has been copied",
+        title: t('copiedToClipboard'),
+        description: t('shortenedUrlCopied'),
       });
     } catch (err) {
       toast({
-        title: "Failed to copy",
-        description: "Please copy the URL manually",
+        title: t('failedToCopy'),
+        description: t('copyManually'),
         variant: "destructive",
       });
     }
@@ -209,8 +211,8 @@ export const UrlShortener = () => {
     document.body.removeChild(link);
     
     toast({
-      title: "QR Code downloaded!",
-      description: "The QR code has been saved to your downloads",
+      title: t('qrDownloaded'),
+      description: t('qrSavedToDownloads'),
     });
   };
 
@@ -230,15 +232,14 @@ export const UrlShortener = () => {
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-glow border border-primary/20">
               <Zap className="w-4 h-4 text-primary" />
               <span className="text-sm font-medium text-muted-foreground">
-                Lightning fast URL shortening
+                {t('lightning')}
               </span>
             </div>
             <h1 className="text-4xl md:text-6xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              Shorten Any URL
+              {t('shortenAnyUrl')}
             </h1>
             <p className="text-xl text-muted-foreground max-w-lg mx-auto">
-              Transform long, complex URLs into short, shareable links instantly. 
-              No signup required, links never expire.
+              {t('description')}
             </p>
           </div>
 
@@ -250,7 +251,7 @@ export const UrlShortener = () => {
                   <Link className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                   <Input
                     type="url"
-                    placeholder="Enter your long URL here..."
+                    placeholder={t('enterUrl')}
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
                     onKeyPress={handleKeyPress}
@@ -268,7 +269,7 @@ export const UrlShortener = () => {
                   {isLoading ? (
                     <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                   ) : (
-                    "Shorten"
+                    t('shorten')
                   )}
                 </Button>
               </div>
@@ -276,7 +277,7 @@ export const UrlShortener = () => {
               {/* Custom ending input */}
               <div className="flex flex-col sm:flex-row gap-3 items-center">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <span>Custom ending (optional):</span>
+                  <span>{t('customEnding')}</span>
                 </div>
                 <div className="flex-1 relative max-w-md">
                   <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-sm">
@@ -284,7 +285,7 @@ export const UrlShortener = () => {
                   </span>
                   <Input
                     type="text"
-                    placeholder="custom-name"
+                    placeholder={t('customName')}
                     value={customId}
                     onChange={(e) => setCustomId(e.target.value)}
                     className="pl-20 h-10 text-sm bg-background/50 border-border/50 focus:border-primary/50 transition-all"
@@ -301,14 +302,14 @@ export const UrlShortener = () => {
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-primary">
                   <Zap className="w-4 h-4" />
-                  <span className="font-semibold">Your shortened URL is ready!</span>
+                  <span className="font-semibold">{t('urlReady')}</span>
                 </div>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                   <div className="lg:col-span-2 space-y-3">
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">
-                        Original URL
+                        {t('originalUrl')}
                       </label>
                       <div className="flex items-center gap-2 p-3 bg-background/30 rounded-md border border-border/30">
                         <span className="text-sm text-foreground truncate flex-1">
@@ -327,7 +328,7 @@ export const UrlShortener = () => {
 
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">
-                        Shortened URL
+                        {t('shortenedUrl')}
                       </label>
                       <div className="flex items-center gap-2 p-3 bg-primary/5 rounded-md border border-primary/20">
                         <span className="text-sm font-mono text-primary flex-1">
@@ -340,7 +341,7 @@ export const UrlShortener = () => {
                           className="h-8 gap-1"
                         >
                           <Copy className="w-3 h-3" />
-                          Copy
+                          {t('copy')}
                         </Button>
                       </div>
                     </div>
@@ -350,7 +351,7 @@ export const UrlShortener = () => {
                   {result.qrCode && (
                     <div className="flex flex-col items-center space-y-2">
                       <label className="text-sm font-medium text-muted-foreground">
-                        QR Code
+                        {t('qrCode')}
                       </label>
                       <div className="bg-white p-2 rounded-lg">
                         <img 
@@ -366,7 +367,7 @@ export const UrlShortener = () => {
                         className="h-8 gap-1"
                       >
                         <Download className="w-3 h-3" />
-                        Download
+                        {t('download')}
                       </Button>
                     </div>
                   )}
@@ -381,22 +382,22 @@ export const UrlShortener = () => {
               <div className="w-8 h-8 bg-gradient-primary rounded-lg mx-auto mb-2 flex items-center justify-center">
                 <Zap className="w-4 h-4 text-primary-foreground" />
               </div>
-              <h3 className="font-semibold text-sm">Instant</h3>
-              <p className="text-xs text-muted-foreground">Get your shortened URL in seconds</p>
+              <h3 className="font-semibold text-sm">{t('instant')}</h3>
+              <p className="text-xs text-muted-foreground">{t('instantDesc')}</p>
             </div>
             <div className="p-4 rounded-lg bg-card/30 border border-border/30">
               <div className="w-8 h-8 bg-gradient-primary rounded-lg mx-auto mb-2 flex items-center justify-center">
                 <Link className="w-4 h-4 text-primary-foreground" />
               </div>
-              <h3 className="font-semibold text-sm">No Expiry</h3>
-              <p className="text-xs text-muted-foreground">Your links work forever</p>
+              <h3 className="font-semibold text-sm">{t('noExpiry')}</h3>
+              <p className="text-xs text-muted-foreground">{t('noExpiryDesc')}</p>
             </div>
             <div className="p-4 rounded-lg bg-card/30 border border-border/30">
               <div className="w-8 h-8 bg-gradient-primary rounded-lg mx-auto mb-2 flex items-center justify-center">
                 <Copy className="w-4 h-4 text-primary-foreground" />
               </div>
-              <h3 className="font-semibold text-sm">No Signup</h3>
-              <p className="text-xs text-muted-foreground">Start shortening immediately</p>
+              <h3 className="font-semibold text-sm">{t('noSignup')}</h3>
+              <p className="text-xs text-muted-foreground">{t('noSignupDesc')}</p>
             </div>
           </div>
         </div>

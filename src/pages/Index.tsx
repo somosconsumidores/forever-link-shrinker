@@ -3,9 +3,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { LogIn, LayoutDashboard } from "lucide-react";
+import { LanguageSelector } from "@/components/LanguageSelector";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const Index = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen bg-background">
@@ -14,18 +17,19 @@ const Index = () => {
         <div className="flex justify-between items-center">
           <img src="/lovable-uploads/ffe1df88-96db-42c1-8d8f-8522631e22bb.png" alt="Minify-URL.com" className="h-8" />
           <div className="flex items-center space-x-2">
+            <LanguageSelector />
             {user ? (
               <Button asChild>
                 <Link to="/dashboard">
                   <LayoutDashboard className="w-4 h-4 mr-2" />
-                  Dashboard
+                  {t('dashboard')}
                 </Link>
               </Button>
             ) : (
               <Button asChild>
                 <Link to="/auth">
                   <LogIn className="w-4 h-4 mr-2" />
-                  Sign In
+                  {t('signIn')}
                 </Link>
               </Button>
             )}
