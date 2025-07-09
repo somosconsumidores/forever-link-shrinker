@@ -286,8 +286,14 @@ const Dashboard = () => {
             )}
           </div>
           <div className="flex items-center gap-2">
+            <Button asChild variant="default">
+              <Link to="/">
+                <Plus className="w-4 h-4 mr-2" />
+                Criar Novo Link
+              </Link>
+            </Button>
             {!subscribed && (
-              <Button asChild variant="default">
+              <Button asChild variant="outline">
                 <Link to="/subscription">
                   <Crown className="w-4 h-4 mr-2" />
                   Upgrade to Premium
@@ -407,9 +413,17 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent>
                 {urls.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">
-                    No URLs yet. Start by shortening your first URL!
-                  </p>
+                  <div className="text-center py-12 space-y-4">
+                    <p className="text-muted-foreground">
+                      Nenhuma URL ainda. Comece criando seu primeiro link encurtado!
+                    </p>
+                    <Button asChild size="lg">
+                      <Link to="/">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Criar Primeiro Link
+                      </Link>
+                    </Button>
+                  </div>
                 ) : (
                   <Table>
                     <TableHeader>
