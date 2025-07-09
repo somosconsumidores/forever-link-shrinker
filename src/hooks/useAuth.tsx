@@ -29,8 +29,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [subscriptionLoading, setSubscriptionLoading] = useState(false);
 
   const checkSubscription = async () => {
-    if (!session) return;
+    if (!session) {
+      console.log('No session available for subscription check');
+      return;
+    }
     
+    console.log('Checking subscription for user:', session.user.email);
     setSubscriptionLoading(true);
     try {
       // First try to get subscription from database
@@ -40,14 +44,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .eq('email', session.user.email)
         .maybeSingle();
       
+      console.log('Database query result:', { dbData, dbError });
+      
       if (dbData) {
         setSubscribed(dbData.subscribed || false);
         setSubscriptionTier(dbData.subscription_tier || null);
         setSubscriptionEnd(dbData.subscription_end || null);
-        console.log('Subscription loaded from database:', dbData);
+        console.log('Subscription loaded from database:', {
+          subscribed: dbData.subscribed,
+          tier: dbData.subscription_tier,
+          end: dbData.subscription_end
+        });
         return;
       }
       
+      console.log('No data in database, trying edge function...');
       // Fallback: try edge function
       const { data, error } = await supabase.functions.invoke('check-subscription');
       if (error) throw error;
