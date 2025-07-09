@@ -3,23 +3,48 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Link, Copy, ExternalLink, Zap } from "lucide-react";
+import { Link, Copy, ExternalLink, Zap, Download, QrCode } from "lucide-react";
+import QRCode from "qrcode";
 
 interface ShortenedUrl {
   original: string;
   shortened: string;
   id: string;
   createdAt: Date;
+  qrCode?: string;
 }
 
 export const UrlShortener = () => {
   const [url, setUrl] = useState("");
+  const [customId, setCustomId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<ShortenedUrl | null>(null);
   const { toast } = useToast();
 
   const generateShortId = () => {
     return Math.random().toString(36).substring(2, 8);
+  };
+
+  const isIdTaken = (id: string) => {
+    const stored = localStorage.getItem("shortenedUrls");
+    const urls = stored ? JSON.parse(stored) : {};
+    return urls[id] !== undefined;
+  };
+
+  const generateQRCode = async (url: string) => {
+    try {
+      return await QRCode.toDataURL(url, {
+        width: 256,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      });
+    } catch (err) {
+      console.error('QR Code generation failed:', err);
+      return null;
+    }
   };
 
   const isValidUrl = (string: string) => {
@@ -55,25 +80,56 @@ export const UrlShortener = () => {
       return;
     }
 
+    // Validate custom ID
+    let finalId = customId.trim();
+    if (finalId) {
+      // Only allow alphanumeric characters and hyphens
+      if (!/^[a-zA-Z0-9-]+$/.test(finalId)) {
+        toast({
+          title: "Invalid custom ending",
+          description: "Only letters, numbers, and hyphens are allowed",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (isIdTaken(finalId)) {
+        toast({
+          title: "Custom ending unavailable",
+          description: "This custom ending is already taken. Please try another.",
+          variant: "destructive",
+        });
+        return;
+      }
+    } else {
+      // Generate random ID and ensure uniqueness
+      do {
+        finalId = generateShortId();
+      } while (isIdTaken(finalId));
+    }
+
     setIsLoading(true);
 
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 800));
 
-    const id = generateShortId();
-    const shortened = `https://short.ly/${id}`;
+    const shortened = `https://short.ly/${finalId}`;
+    
+    // Generate QR code
+    const qrCode = await generateQRCode(shortened);
     
     const shortenedUrl: ShortenedUrl = {
       original: formattedUrl,
       shortened,
-      id,
+      id: finalId,
       createdAt: new Date(),
+      qrCode: qrCode || undefined,
     };
 
     // Store in localStorage
     const stored = localStorage.getItem("shortenedUrls");
     const urls = stored ? JSON.parse(stored) : {};
-    urls[id] = shortenedUrl;
+    urls[finalId] = shortenedUrl;
     localStorage.setItem("shortenedUrls", JSON.stringify(urls));
 
     setResult(shortenedUrl);
@@ -99,6 +155,22 @@ export const UrlShortener = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const downloadQRCode = () => {
+    if (!result?.qrCode) return;
+    
+    const link = document.createElement('a');
+    link.href = result.qrCode;
+    link.download = `qr-code-${result.id}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast({
+      title: "QR Code downloaded!",
+      description: "The QR code has been saved to your downloads",
+    });
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -159,6 +231,26 @@ export const UrlShortener = () => {
                   )}
                 </Button>
               </div>
+              
+              {/* Custom ending input */}
+              <div className="flex flex-col sm:flex-row gap-3 items-center">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <span>Custom ending (optional):</span>
+                </div>
+                <div className="flex-1 relative max-w-md">
+                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-sm">
+                    short.ly/
+                  </span>
+                  <Input
+                    type="text"
+                    placeholder="custom-name"
+                    value={customId}
+                    onChange={(e) => setCustomId(e.target.value)}
+                    className="pl-20 h-10 text-sm bg-background/50 border-border/50 focus:border-primary/50 transition-all"
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
             </div>
           </Card>
 
@@ -171,45 +263,72 @@ export const UrlShortener = () => {
                   <span className="font-semibold">Your shortened URL is ready!</span>
                 </div>
                 
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">
-                      Original URL
-                    </label>
-                    <div className="flex items-center gap-2 p-3 bg-background/30 rounded-md border border-border/30">
-                      <span className="text-sm text-foreground truncate flex-1">
-                        {result.original}
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 shrink-0"
-                        onClick={() => window.open(result.original, "_blank")}
-                      >
-                        <ExternalLink className="w-3 h-3" />
-                      </Button>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                  <div className="lg:col-span-2 space-y-3">
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">
+                        Original URL
+                      </label>
+                      <div className="flex items-center gap-2 p-3 bg-background/30 rounded-md border border-border/30">
+                        <span className="text-sm text-foreground truncate flex-1">
+                          {result.original}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 shrink-0"
+                          onClick={() => window.open(result.original, "_blank")}
+                        >
+                          <ExternalLink className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">
+                        Shortened URL
+                      </label>
+                      <div className="flex items-center gap-2 p-3 bg-primary/5 rounded-md border border-primary/20">
+                        <span className="text-sm font-mono text-primary flex-1">
+                          {result.shortened}
+                        </span>
+                        <Button
+                          variant="glass"
+                          size="sm"
+                          onClick={() => copyToClipboard(result.shortened)}
+                          className="h-8 gap-1"
+                        >
+                          <Copy className="w-3 h-3" />
+                          Copy
+                        </Button>
+                      </div>
                     </div>
                   </div>
 
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">
-                      Shortened URL
-                    </label>
-                    <div className="flex items-center gap-2 p-3 bg-primary/5 rounded-md border border-primary/20">
-                      <span className="text-sm font-mono text-primary flex-1">
-                        {result.shortened}
-                      </span>
+                  {/* QR Code Section */}
+                  {result.qrCode && (
+                    <div className="flex flex-col items-center space-y-2">
+                      <label className="text-sm font-medium text-muted-foreground">
+                        QR Code
+                      </label>
+                      <div className="bg-white p-2 rounded-lg">
+                        <img 
+                          src={result.qrCode} 
+                          alt="QR Code" 
+                          className="w-24 h-24"
+                        />
+                      </div>
                       <Button
                         variant="glass"
                         size="sm"
-                        onClick={() => copyToClipboard(result.shortened)}
+                        onClick={downloadQRCode}
                         className="h-8 gap-1"
                       >
-                        <Copy className="w-3 h-3" />
-                        Copy
+                        <Download className="w-3 h-3" />
+                        Download
                       </Button>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </Card>
