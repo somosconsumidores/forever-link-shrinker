@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { Link, Copy, ExternalLink, Zap, Download, QrCode } from "lucide-react";
 import QRCode from "qrcode";
 
@@ -20,15 +22,27 @@ export const UrlShortener = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<ShortenedUrl | null>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const generateShortId = () => {
     return Math.random().toString(36).substring(2, 8);
   };
 
-  const isIdTaken = (id: string) => {
-    const stored = localStorage.getItem("shortenedUrls");
-    const urls = stored ? JSON.parse(stored) : {};
-    return urls[id] !== undefined;
+  const isIdTaken = async (id: string) => {
+    if (user) {
+      // Check in database for logged-in users
+      const { data } = await supabase
+        .from('shortened_urls')
+        .select('short_code')
+        .eq('short_code', id)
+        .single();
+      return !!data;
+    } else {
+      // Check in localStorage for anonymous users
+      const stored = localStorage.getItem("shortenedUrls");
+      const urls = stored ? JSON.parse(stored) : {};
+      return urls[id] !== undefined;
+    }
   };
 
   const generateQRCode = async (url: string) => {
@@ -93,7 +107,7 @@ export const UrlShortener = () => {
         return;
       }
 
-      if (isIdTaken(finalId)) {
+      if (await isIdTaken(finalId)) {
         toast({
           title: "Custom ending unavailable",
           description: "This custom ending is already taken. Please try another.",
@@ -105,40 +119,67 @@ export const UrlShortener = () => {
       // Generate random ID and ensure uniqueness
       do {
         finalId = generateShortId();
-      } while (isIdTaken(finalId));
+      } while (await isIdTaken(finalId));
     }
 
     setIsLoading(true);
 
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 800));
+    try {
+      const shortened = `https://short.ly/${finalId}`;
+      
+      // Generate QR code
+      const qrCode = await generateQRCode(shortened);
+      
+      const shortenedUrl: ShortenedUrl = {
+        original: formattedUrl,
+        shortened,
+        id: finalId,
+        createdAt: new Date(),
+        qrCode: qrCode || undefined,
+      };
 
-    const shortened = `https://short.ly/${finalId}`;
-    
-    // Generate QR code
-    const qrCode = await generateQRCode(shortened);
-    
-    const shortenedUrl: ShortenedUrl = {
-      original: formattedUrl,
-      shortened,
-      id: finalId,
-      createdAt: new Date(),
-      qrCode: qrCode || undefined,
-    };
+      if (user) {
+        // Save to database for logged-in users
+        const { error } = await supabase
+          .from('shortened_urls')
+          .insert({
+            user_id: user.id,
+            original_url: formattedUrl,
+            custom_alias: customId || null,
+            short_code: finalId,
+          });
 
-    // Store in localStorage
-    const stored = localStorage.getItem("shortenedUrls");
-    const urls = stored ? JSON.parse(stored) : {};
-    urls[finalId] = shortenedUrl;
-    localStorage.setItem("shortenedUrls", JSON.stringify(urls));
+        if (error) {
+          throw error;
+        }
 
-    setResult(shortenedUrl);
-    setIsLoading(false);
+        toast({
+          title: "URL shortened successfully!",
+          description: "URL saved to your dashboard",
+        });
+      } else {
+        // Store in localStorage for anonymous users
+        const stored = localStorage.getItem("shortenedUrls");
+        const urls = stored ? JSON.parse(stored) : {};
+        urls[finalId] = shortenedUrl;
+        localStorage.setItem("shortenedUrls", JSON.stringify(urls));
 
-    toast({
-      title: "URL shortened successfully!",
-      description: "Your shortened URL is ready to use",
-    });
+        toast({
+          title: "URL shortened successfully!",
+          description: "Sign in to save and manage your URLs",
+        });
+      }
+
+      setResult(shortenedUrl);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to shorten URL",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const copyToClipboard = async (text: string) => {
