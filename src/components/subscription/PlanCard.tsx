@@ -81,7 +81,7 @@ export const PlanCard = ({ plan, isAnnual, index }: PlanCardProps) => {
       return `R$ ${price.toFixed(2).replace('.', ',')}`;
     }
     
-    const price = isAnnual ? plan.annualPrice! / 12 : plan.monthlyPrice;
+    const price = isAnnual ? plan.annualPrice! : plan.monthlyPrice;
     return `$${price.toFixed(2)}`;
   };
 
@@ -91,9 +91,17 @@ export const PlanCard = ({ plan, isAnnual, index }: PlanCardProps) => {
     // Check if current language is Portuguese-BR using the hook
     const isBrazilian = localStorage.getItem('language') === 'pt';
     
+    if (isBrazilian && plan.monthlyPriceBR && isAnnual) {
+      return `(R$ ${plan.monthlyPriceBR.toFixed(2).replace('.', ',')} ${t('perMonth')} )`;
+    }
+    
+    if (isAnnual) {
+      const monthlyPrice = plan.annualPrice / 12;
+      return `($${monthlyPrice.toFixed(2)} ${t('perMonth')} )`;
+    }
+    
     if (isBrazilian && plan.annualPriceBR) {
-      const yearlyPrice = plan.annualPriceBR * 12;
-      return `(R$ ${yearlyPrice.toFixed(2).replace('.', ',')} ${t('perYear')} )`;
+      return `(R$ ${plan.annualPriceBR.toFixed(2).replace('.', ',')} ${t('perYear')} )`;
     }
     
     return `($${plan.annualPrice.toFixed(2)} ${t('perYear')} )`;
@@ -117,10 +125,10 @@ export const PlanCard = ({ plan, isAnnual, index }: PlanCardProps) => {
           <div className="flex items-baseline gap-1">
             <span className="text-3xl font-bold">{getPrice(plan)}</span>
             {plan.monthlyPrice && (
-              <span className="text-muted-foreground">{t('perMonth')}</span>
+              <span className="text-muted-foreground">{isAnnual ? t('perYear') : t('perMonth')}</span>
             )}
           </div>
-          {plan.annualPrice && isAnnual && (
+          {plan.annualPrice && (
             <p className="text-sm text-muted-foreground">{getYearlyPrice(plan)}</p>
           )}
         </div>
