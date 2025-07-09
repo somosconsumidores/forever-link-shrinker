@@ -33,12 +33,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     
     setSubscriptionLoading(true);
     try {
+      // First try to get subscription from database
+      const { data: dbData, error: dbError } = await supabase
+        .from('subscribers')
+        .select('subscribed, subscription_tier, subscription_end')
+        .eq('email', session.user.email)
+        .maybeSingle();
+      
+      if (dbData) {
+        setSubscribed(dbData.subscribed || false);
+        setSubscriptionTier(dbData.subscription_tier || null);
+        setSubscriptionEnd(dbData.subscription_end || null);
+        console.log('Subscription loaded from database:', dbData);
+        return;
+      }
+      
+      // Fallback: try edge function
       const { data, error } = await supabase.functions.invoke('check-subscription');
       if (error) throw error;
       
       setSubscribed(data.subscribed || false);
       setSubscriptionTier(data.subscription_tier || null);
       setSubscriptionEnd(data.subscription_end || null);
+      console.log('Subscription loaded from edge function:', data);
     } catch (error) {
       console.error('Error checking subscription:', error);
       setSubscribed(false);
