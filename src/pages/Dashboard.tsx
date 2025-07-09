@@ -28,7 +28,7 @@ interface ShortenedUrl {
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { user, signOut, loading: authLoading, subscribed, subscriptionTier } = useAuth();
+  const { user, signOut, loading: authLoading, subscribed, subscriptionTier, checkSubscription } = useAuth();
   const { checkUrlLimit, isFeatureAllowed, getRemainingUrls } = useSubscriptionLimits();
   const { toast } = useToast();
   const [urls, setUrls] = useState<ShortenedUrl[]>([]);
@@ -288,6 +288,9 @@ const Dashboard = () => {
             )}
           </div>
           <div className="flex items-center gap-2">
+            <Button onClick={checkSubscription} variant="ghost" size="sm">
+              🔄 Debug Subscription
+            </Button>
             <Button asChild variant="default">
               <Link to="/">
                 <Plus className="w-4 h-4 mr-2" />
