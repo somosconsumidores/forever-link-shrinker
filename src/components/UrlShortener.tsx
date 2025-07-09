@@ -402,6 +402,59 @@ export const UrlShortener = () => {
           </div>
         </div>
       </div>
+
+      {/* Promotional Section */}
+      <div className="bg-primary text-primary-foreground py-12">
+        <div className="container mx-auto px-4 max-w-4xl text-center">
+          <h2 className="text-2xl font-bold mb-4">
+            {t('wantMoreTitle')}
+          </h2>
+          <p className="text-lg mb-8 text-primary-foreground/90">
+            {t('wantMoreDescription')}
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+            <Button 
+              variant="secondary" 
+              size="lg"
+              className="bg-white text-primary hover:bg-white/90"
+            >
+              {t('viewPlans')}
+            </Button>
+            <Button 
+              variant="outline" 
+              size="lg"
+              className="border-white text-white hover:bg-white hover:text-primary"
+            >
+              {t('createFreeAccount')}
+            </Button>
+          </div>
+
+          <div className="text-left max-w-2xl mx-auto">
+            <p className="text-lg font-semibold mb-4 text-center">
+              {t('plansInclude')}
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-white rounded-full"></div>
+                <span>{t('detailedAnalytics')}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-white rounded-full"></div>
+                <span>{t('bulkShortUrls')}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-white rounded-full"></div>
+                <span>{t('brandedDomains')}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-white rounded-full"></div>
+                <span>{t('linkManagement')}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

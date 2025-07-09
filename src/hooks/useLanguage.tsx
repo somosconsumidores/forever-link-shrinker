@@ -58,6 +58,17 @@ const translations = {
     noSignup: 'No Signup',
     noSignupDesc: 'Start shortening immediately',
     
+    // Promotional section
+    wantMoreTitle: 'Want more out of your link shortener?',
+    wantMoreDescription: 'Track link analytics, use branded domains for fully custom links, and manage your links with our paid plans.',
+    viewPlans: 'View Plans',
+    createFreeAccount: 'Create Free Account',
+    plansInclude: 'Minify-URL.com plans include:',
+    detailedAnalytics: 'Detailed Link Analytics',
+    bulkShortUrls: 'Bulk Short URLs',
+    brandedDomains: 'Fully Branded Domains',
+    linkManagement: 'Link Management Features',
+    
     // Auth
     welcomeTo: 'Welcome to Minify-URL.com',
     signInDesc: 'Sign in to your account or create a new one',
@@ -113,6 +124,17 @@ const translations = {
     noExpiryDesc: 'Seus links funcionam para sempre',
     noSignup: 'Sem Cadastro',
     noSignupDesc: 'Comece a encurtar imediatamente',
+    
+    // Promotional section
+    wantMoreTitle: 'Quer mais do seu encurtador de links?',
+    wantMoreDescription: 'Acompanhe análises de links, use domínios personalizados para links totalmente customizados e gerencie seus links com nossos planos pagos.',
+    viewPlans: 'Ver Planos',
+    createFreeAccount: 'Criar Conta Gratuita',
+    plansInclude: 'Os planos do Minify-URL.com incluem:',
+    detailedAnalytics: 'Análises Detalhadas de Links',
+    bulkShortUrls: 'URLs Encurtadas em Massa',
+    brandedDomains: 'Domínios Totalmente Personalizados',
+    linkManagement: 'Recursos de Gerenciamento de Links',
     
     // Auth
     welcomeTo: 'Bem-vindo ao Minify-URL.com',
@@ -170,6 +192,17 @@ const translations = {
     noSignup: 'Sin Registro',
     noSignupDesc: 'Comienza a acortar inmediatamente',
     
+    // Promotional section
+    wantMoreTitle: '¿Quieres más de tu acortador de enlaces?',
+    wantMoreDescription: 'Rastrea análisis de enlaces, usa dominios personalizados para enlaces totalmente customizados y gestiona tus enlaces con nuestros planes de pago.',
+    viewPlans: 'Ver Planes',
+    createFreeAccount: 'Crear Cuenta Gratuita',
+    plansInclude: 'Los planes de Minify-URL.com incluyen:',
+    detailedAnalytics: 'Análisis Detallados de Enlaces',
+    bulkShortUrls: 'URLs Acortadas en Masa',
+    brandedDomains: 'Dominios Totalmente Personalizados',
+    linkManagement: 'Funciones de Gestión de Enlaces',
+    
     // Auth
     welcomeTo: 'Bienvenido a Minify-URL.com',
     signInDesc: 'Inicia sesión en tu cuenta o crea una nueva',
@@ -226,6 +259,17 @@ const translations = {
     noSignup: 'Sans Inscription',
     noSignupDesc: 'Commencez à raccourcir immédiatement',
     
+    // Promotional section
+    wantMoreTitle: 'Vous voulez plus de votre raccourcisseur de liens ?',
+    wantMoreDescription: 'Suivez les analyses de liens, utilisez des domaines personnalisés pour des liens entièrement personnalisés et gérez vos liens avec nos plans payants.',
+    viewPlans: 'Voir les Plans',
+    createFreeAccount: 'Créer un Compte Gratuit',
+    plansInclude: 'Les plans Minify-URL.com incluent :',
+    detailedAnalytics: 'Analyses Détaillées de Liens',
+    bulkShortUrls: 'URLs Raccourcies en Masse',
+    brandedDomains: 'Domaines Entièrement Personnalisés',
+    linkManagement: 'Fonctionnalités de Gestion de Liens',
+    
     // Auth
     welcomeTo: 'Bienvenue sur Minify-URL.com',
     signInDesc: 'Connectez-vous à votre compte ou créez-en un nouveau',
@@ -281,6 +325,17 @@ const translations = {
     noExpiryDesc: 'Ihre Links funktionieren für immer',
     noSignup: 'Keine Anmeldung',
     noSignupDesc: 'Sofort mit dem Kürzen beginnen',
+    
+    // Promotional section
+    wantMoreTitle: 'Wollen Sie mehr aus Ihrem Link-Verkürzer herausholen?',
+    wantMoreDescription: 'Verfolgen Sie Link-Analysen, verwenden Sie gebrandete Domains für vollständig angepasste Links und verwalten Sie Ihre Links mit unseren kostenpflichtigen Plänen.',
+    viewPlans: 'Pläne Anzeigen',
+    createFreeAccount: 'Kostenloses Konto Erstellen',
+    plansInclude: 'Minify-URL.com Pläne umfassen:',
+    detailedAnalytics: 'Detaillierte Link-Analysen',
+    bulkShortUrls: 'Massen-URL-Verkürzung',
+    brandedDomains: 'Vollständig Gebrandete Domains',
+    linkManagement: 'Link-Management-Funktionen',
     
     // Auth
     welcomeTo: 'Willkommen bei Minify-URL.com',
