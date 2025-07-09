@@ -14,7 +14,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<{ error: any }>;
   resetPassword: (email: string) => Promise<{ error: any }>;
-  checkSubscription: () => Promise<void>;
+  checkSubscription: (sessionToUse?: Session | null) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -28,20 +28,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
   const [subscriptionLoading, setSubscriptionLoading] = useState(false);
 
-  const checkSubscription = async () => {
-    if (!session) {
+  const checkSubscription = async (sessionToUse?: Session | null) => {
+    const currentSession = sessionToUse || session;
+    if (!currentSession) {
       console.log('No session available for subscription check');
       return;
     }
     
-    console.log('Checking subscription for user:', session.user.email);
+    console.log('Checking subscription for user:', currentSession.user.email);
     setSubscriptionLoading(true);
     try {
       // First try to get subscription from database
       const { data: dbData, error: dbError } = await supabase
         .from('subscribers')
         .select('subscribed, subscription_tier, subscription_end')
-        .eq('email', session.user.email)
+        .eq('email', currentSession.user.email)
         .maybeSingle();
       
       console.log('Database query result:', { dbData, dbError });
@@ -80,25 +81,36 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
         
-        // Check subscription when user signs in
-        if (session?.user) {
-          await checkSubscription();
+        // Check subscription when user signs in or session is refreshed
+        if (session?.user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
+          console.log('Calling checkSubscription due to auth state change');
+          await checkSubscription(session);
+        }
+        
+        // Reset subscription state when user signs out
+        if (event === 'SIGNED_OUT') {
+          setSubscribed(false);
+          setSubscriptionTier(null);
+          setSubscriptionEnd(null);
         }
       }
     );
 
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      console.log('Initial session check:', session?.user?.email);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
       
       // Check subscription on initial load
       if (session?.user) {
-        await checkSubscription();
+        console.log('Calling checkSubscription on initial load');
+        await checkSubscription(session);
       }
     });
 

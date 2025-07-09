@@ -288,9 +288,6 @@ const Dashboard = () => {
             )}
           </div>
           <div className="flex items-center gap-2">
-            <Button onClick={checkSubscription} variant="ghost" size="sm">
-              🔄 Debug Subscription
-            </Button>
             <Button asChild variant="default">
               <Link to="/">
                 <Plus className="w-4 h-4 mr-2" />
