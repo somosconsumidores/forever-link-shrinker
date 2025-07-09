@@ -18,9 +18,8 @@ export const PlanCard = ({ plan, isAnnual, index }: PlanCardProps) => {
   const getPrice = (plan: PlanCardProps['plan']) => {
     if (plan.monthlyPrice === null) return t('custom');
     
-    // Check if current language is Portuguese-BR
-    const currentLanguage = localStorage.getItem('language') || 'en';
-    const isBrazilian = currentLanguage === 'pt-BR';
+    // Check if current language is Portuguese-BR using the hook
+    const isBrazilian = localStorage.getItem('language') === 'pt';
     
     if (isBrazilian && plan.monthlyPriceBR && plan.annualPriceBR) {
       const price = isAnnual ? plan.annualPriceBR : plan.monthlyPriceBR;
@@ -34,9 +33,8 @@ export const PlanCard = ({ plan, isAnnual, index }: PlanCardProps) => {
   const getYearlyPrice = (plan: PlanCardProps['plan']) => {
     if (plan.annualPrice === null) return '';
     
-    // Check if current language is Portuguese-BR
-    const currentLanguage = localStorage.getItem('language') || 'en';
-    const isBrazilian = currentLanguage === 'pt-BR';
+    // Check if current language is Portuguese-BR using the hook
+    const isBrazilian = localStorage.getItem('language') === 'pt';
     
     if (isBrazilian && plan.annualPriceBR) {
       const yearlyPrice = plan.annualPriceBR * 12;

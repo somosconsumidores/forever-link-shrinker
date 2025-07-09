@@ -201,7 +201,7 @@ const translations = {
     links: 'Links',
     unlimitedClicksTrackable: 'Cliques Rastreáveis Ilimitados',
     trackClicks: 'Rastreie até {{count}} Cliques',
-    signUp: 'Inscrever-se',
+    signUp: 'Assinar',
     contactUs: 'Contate-nos',
     custom: 'Personalizado',
     perMonth: '/ mês *',
