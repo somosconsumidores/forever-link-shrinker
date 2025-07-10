@@ -20,6 +20,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  console.log('=== AUTH PROVIDER INITIALIZED ===');
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -79,9 +80,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
+    console.log('=== AUTH USEEFFECT STARTED ===');
+    
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email);
+        console.log('=== AUTH STATE CHANGE ===');
+        console.log('Event:', event);
+        console.log('Session user:', session?.user?.email);
+        console.log('Session ID:', session?.user?.id);
+        
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
