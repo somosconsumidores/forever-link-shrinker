@@ -27,8 +27,9 @@ export const UrlShortener = () => {
   const [result, setResult] = useState<ShortenedUrl | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
-  const { getRemainingUrls } = useSubscriptionLimits();
+  const { getRemainingUrls, checkUrlLimit } = useSubscriptionLimits();
   const { t } = useLanguage();
+  const [userUrlCount, setUserUrlCount] = useState<number>(0);
 
   const generateShortId = () => {
     return Math.random().toString(36).substring(2, 8);
@@ -132,6 +133,20 @@ export const UrlShortener = () => {
   };
 
   const shortenUrl = async () => {
+    // Get current URL count for logged-in users first
+    if (user && userUrlCount === 0) {
+      const { count } = await supabase
+        .from('shortened_urls')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+      setUserUrlCount(count || 0);
+      
+      // Check URL limit for logged-in users
+      if (!checkUrlLimit(count || 0)) {
+        return;
+      }
+    }
+
     // Rate limiting check
     const limiter = user ? authenticatedLimiter : urlShortenLimiter;
     const identifier = user?.id || 'anonymous';
@@ -248,6 +263,9 @@ export const UrlShortener = () => {
         if (error) {
           throw error;
         }
+
+        // Update the user URL count
+        setUserUrlCount(prev => prev + 1);
 
         toast({
           title: t('urlShortenedSuccess'),
