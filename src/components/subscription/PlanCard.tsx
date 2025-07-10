@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -16,34 +17,38 @@ interface PlanCardProps {
 export const PlanCard = ({ plan, isAnnual, index }: PlanCardProps) => {
   const { t, language } = useLanguage();
   const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubscribe = async () => {
-    if (!user) {
-      toast.error('Você precisa estar logado para assinar um plano');
-      return;
-    }
-
-    if (plan.name === 'Enterprise') {
-      return; // Enterprise plan doesn't have checkout
-    }
-
-    // Get the correct price ID based on language and billing period
-    const isBrazilian = language === 'pt';
-    let priceId: string | undefined;
-
-    if (isBrazilian && plan.stripePriceIds) {
-      priceId = isAnnual ? plan.stripePriceIds.annual : plan.stripePriceIds.monthly;
-    } else if (plan.stripePriceIds) {
-      // For non-Brazilian users, you might want to add USD price IDs later
-      priceId = isAnnual ? plan.stripePriceIds.annual : plan.stripePriceIds.monthly;
-    }
-
-    if (!priceId) {
-      toast.error('Price ID não encontrado para este plano');
-      return;
-    }
-
+    if (isLoading) return; // Prevent multiple clicks
+    
+    setIsLoading(true);
     try {
+      if (!user) {
+        toast.error('Você precisa estar logado para assinar um plano');
+        return;
+      }
+
+      if (plan.name === 'Enterprise') {
+        return; // Enterprise plan doesn't have checkout
+      }
+
+      // Get the correct price ID based on language and billing period
+      const isBrazilian = language === 'pt';
+      let priceId: string | undefined;
+
+      if (isBrazilian && plan.stripePriceIds) {
+        priceId = isAnnual ? plan.stripePriceIds.annual : plan.stripePriceIds.monthly;
+      } else if (plan.stripePriceIds) {
+        // For non-Brazilian users, you might want to add USD price IDs later
+        priceId = isAnnual ? plan.stripePriceIds.annual : plan.stripePriceIds.monthly;
+      }
+
+      if (!priceId) {
+        toast.error('Price ID não encontrado para este plano');
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: { priceId }
       });
@@ -67,6 +72,8 @@ export const PlanCard = ({ plan, isAnnual, index }: PlanCardProps) => {
     } catch (error) {
       console.error('Erro ao criar checkout:', error);
       toast.error('Erro ao processar pagamento. Verifique os logs para mais detalhes.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -163,11 +170,12 @@ export const PlanCard = ({ plan, isAnnual, index }: PlanCardProps) => {
           className={`w-full ${plan.popular ? 'bg-primary hover:bg-primary/90' : 'bg-green-600 hover:bg-green-700'} text-white`}
           onClick={plan.name === 'Enterprise' ? undefined : handleSubscribe}
           asChild={plan.name === 'Enterprise'}
+          disabled={isLoading}
         >
           {plan.name === 'Enterprise' ? (
             <span>{plan.buttonText}</span>
           ) : (
-            plan.buttonText
+            isLoading ? 'Processando...' : plan.buttonText
           )}
         </Button>
       </CardFooter>
