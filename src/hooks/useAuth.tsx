@@ -31,45 +31,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const checkSubscription = async (sessionToUse?: Session | null) => {
     const currentSession = sessionToUse || session;
     if (!currentSession) {
-      console.log('No session available for subscription check');
       return;
     }
     
-    console.log('Checking subscription for user:', currentSession.user.email);
     setSubscriptionLoading(true);
     try {
-      // First try to get subscription from database
+      // Check subscription from database only
       const { data: dbData, error: dbError } = await supabase
         .from('subscribers')
         .select('subscribed, subscription_tier, subscription_end')
         .eq('email', currentSession.user.email)
         .maybeSingle();
       
-      console.log('Database query result:', { dbData, dbError });
-      
       if (dbData) {
         setSubscribed(dbData.subscribed || false);
         setSubscriptionTier(dbData.subscription_tier || null);
         setSubscriptionEnd(dbData.subscription_end || null);
-        console.log('Subscription loaded from database:', {
-          subscribed: dbData.subscribed,
-          tier: dbData.subscription_tier,
-          end: dbData.subscription_end
-        });
-        return;
+      } else {
+        // If no subscription data found, set as free user
+        setSubscribed(false);
+        setSubscriptionTier(null);
+        setSubscriptionEnd(null);
       }
-      
-      console.log('No data in database, trying edge function...');
-      // Fallback: try edge function
-      const { data, error } = await supabase.functions.invoke('check-subscription');
-      if (error) throw error;
-      
-      setSubscribed(data.subscribed || false);
-      setSubscriptionTier(data.subscription_tier || null);
-      setSubscriptionEnd(data.subscription_end || null);
-      console.log('Subscription loaded from edge function:', data);
     } catch (error) {
       console.error('Error checking subscription:', error);
+      // On error, set as free user to allow app to continue
       setSubscribed(false);
       setSubscriptionTier(null);
       setSubscriptionEnd(null);
