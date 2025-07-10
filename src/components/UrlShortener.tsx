@@ -133,7 +133,10 @@ export const UrlShortener = () => {
   };
 
   const shortenUrl = async () => {
-    console.log('shortenUrl called, user:', user);
+    console.log('=== SHORTENURL DEBUG ===');
+    console.log('User object:', user);
+    console.log('User ID:', user?.id);
+    console.log('User email:', user?.email);
     
     // Get current URL count for logged-in users first
     if (user && userUrlCount === 0) {

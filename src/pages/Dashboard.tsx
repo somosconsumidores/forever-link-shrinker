@@ -37,11 +37,17 @@ const Dashboard = () => {
   const [bulkUrls, setBulkUrls] = useState('');
   const [processingBulk, setProcessingBulk] = useState(false);
 
+  console.log('=== DASHBOARD DEBUG ===');
+  console.log('Auth loading:', authLoading);
+  console.log('User in Dashboard:', user);
+  console.log('User ID in Dashboard:', user?.id);
+
   if (authLoading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
   if (!user) {
+    console.log('No user, redirecting to auth');
     return <Navigate to="/auth" replace />;
   }
 

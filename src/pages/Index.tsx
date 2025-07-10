@@ -10,6 +10,10 @@ const Index = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
 
+  console.log('=== INDEX DEBUG ===');
+  console.log('User in Index:', user);
+  console.log('User ID in Index:', user?.id);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
