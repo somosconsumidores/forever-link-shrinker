@@ -547,7 +547,7 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
       return browserLang;
     }
     
-    return 'en';
+    return 'pt';
   });
 
   const setLanguage = (lang: Language) => {
