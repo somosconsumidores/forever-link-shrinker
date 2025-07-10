@@ -43,6 +43,7 @@ export const RedirectHandler = () => {
         }
 
         // Track the click using the edge function for database URLs
+        console.log('Calling track-click edge function for:', id);
         const { data, error } = await supabase.functions.invoke('track-click', {
           body: {
             shortCode: id,
@@ -51,6 +52,8 @@ export const RedirectHandler = () => {
             ipAddress: await getClientIP()
           }
         });
+
+        console.log('track-click response:', { data, error });
 
         if (error) {
           console.error('Error tracking click:', error);
