@@ -133,9 +133,12 @@ export const UrlShortener = () => {
   };
 
   const shortenUrl = async () => {
-    if (isLoading) return; // Prevent multiple clicks
+    if (isLoading) {
+      console.log('UrlShortener: Already loading, ignoring click');
+      return;
+    }
     
-    // Early validation checks
+    console.log('UrlShortener: Starting URL shortening process');
     if (!url.trim()) {
       toast({
         title: t('pleaseEnterUrl'),
@@ -237,6 +240,7 @@ export const UrlShortener = () => {
     }
 
     setIsLoading(true);
+    console.log('UrlShortener: Set loading to true, finalId:', finalId);
 
     try {
       const shortened = `${window.location.origin}/${finalId}`;
@@ -306,6 +310,7 @@ export const UrlShortener = () => {
         variant: "destructive",
       });
     } finally {
+      console.log('UrlShortener: Setting loading to false');
       setIsLoading(false);
     }
   };

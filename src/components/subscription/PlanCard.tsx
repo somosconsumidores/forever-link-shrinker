@@ -20,20 +20,26 @@ export const PlanCard = ({ plan, isAnnual, index }: PlanCardProps) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubscribe = async () => {
-    if (isLoading) return; // Prevent multiple clicks
+    if (isLoading) {
+      console.log('PlanCard: Already loading, ignoring click');
+      return;
+    }
     
+    console.log('PlanCard: Starting subscription process for', plan.name);
     setIsLoading(true);
     
     // Early validation checks
     if (!user) {
+      console.log('PlanCard: No user found');
       setIsLoading(false);
       toast.error('Você precisa estar logado para assinar um plano');
       return;
     }
 
     if (plan.name === 'Enterprise') {
+      console.log('PlanCard: Enterprise plan, skipping checkout');
       setIsLoading(false);
-      return; // Enterprise plan doesn't have checkout
+      return;
     }
 
     // Get the correct price ID based on language and billing period
@@ -43,41 +49,50 @@ export const PlanCard = ({ plan, isAnnual, index }: PlanCardProps) => {
     if (isBrazilian && plan.stripePriceIds) {
       priceId = isAnnual ? plan.stripePriceIds.annual : plan.stripePriceIds.monthly;
     } else if (plan.stripePriceIds) {
-      // For non-Brazilian users, you might want to add USD price IDs later
       priceId = isAnnual ? plan.stripePriceIds.annual : plan.stripePriceIds.monthly;
     }
 
+    console.log('PlanCard: Using priceId:', priceId, 'for', isAnnual ? 'annual' : 'monthly');
+
     if (!priceId) {
+      console.log('PlanCard: No priceId found');
       setIsLoading(false);
       toast.error('Price ID não encontrado para este plano');
       return;
     }
 
     try {
+      console.log('PlanCard: Calling create-checkout function');
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: { priceId }
       });
 
+      console.log('PlanCard: Checkout response:', { data, error });
+
       if (error) {
-        console.error('Checkout error:', error);
+        console.error('PlanCard: Checkout error:', error);
         throw error;
       }
 
       if (data?.error) {
-        console.error('Checkout function error:', data.error);
+        console.error('PlanCard: Checkout function error:', data.error);
         toast.error(`Erro no checkout: ${data.error}`);
         return;
       }
 
       if (data?.url) {
+        console.log('PlanCard: Opening checkout URL:', data.url);
         window.open(data.url, '_blank');
+        console.log('PlanCard: Checkout URL opened successfully');
       } else {
+        console.error('PlanCard: No URL returned from checkout');
         throw new Error('URL de checkout não foi retornada');
       }
     } catch (error) {
-      console.error('Erro ao criar checkout:', error);
+      console.error('PlanCard: Error in handleSubscribe:', error);
       toast.error('Erro ao processar pagamento. Verifique os logs para mais detalhes.');
     } finally {
+      console.log('PlanCard: Setting loading to false');
       setIsLoading(false);
     }
   };
