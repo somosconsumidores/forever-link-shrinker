@@ -129,6 +129,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setSubscribed(false);
     setSubscriptionTier(null);
     setSubscriptionEnd(null);
+    // Clear anonymous shortened URLs from localStorage
+    localStorage.removeItem("shortenedUrls");
+    console.log("Cleared shortenedUrls from localStorage on sign out.");
     return { error };
   };
 

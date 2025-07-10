@@ -2,13 +2,20 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
+import { useAuth } from '@/hooks/useAuth'; // Import useAuth
 
 export const RedirectHandler = () => {
   const { id } = useParams<{ id: string }>();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const { user, loading: authLoading } = useAuth(); // Get user and auth loading state
 
   useEffect(() => {
+    if (authLoading) {
+      // Wait for authentication state to be determined
+      return;
+    }
+
     const handleRedirect = async () => {
       if (!id) {
         setError('Invalid short URL');
@@ -17,69 +24,110 @@ export const RedirectHandler = () => {
       }
 
       try {
-        console.log('Attempting to redirect short URL:', id);
-        
-        // First check localStorage for anonymous URLs
-        const stored = localStorage.getItem("shortenedUrls");
-        if (stored) {
-          const urls = JSON.parse(stored);
-          const localUrl = urls[id];
-          
-          if (localUrl && localUrl._secure) {
-            // Check expiration
-            if (localUrl.expires && Date.now() > localUrl.expires) {
-              console.log('Anonymous URL expired:', id);
-              setError('This short URL has expired');
-              setLoading(false);
-              return;
+        console.log('Attempting to redirect short URL:', id, 'User authenticated:', !!user);
+
+        if (user) {
+          // User is authenticated: DB first
+          console.log('User authenticated. Calling track-click edge function for:', id);
+          const { data, error: dbError } = await supabase.functions.invoke('track-click', {
+            body: {
+              shortCode: id,
+              userAgent: navigator.userAgent,
+              referrer: document.referrer,
+              ipAddress: await getClientIP()
             }
-            
-            // Decode the obfuscated URL
-            const originalUrl = atob(localUrl.original);
-            console.log('Found in localStorage, redirecting to:', originalUrl);
-            window.location.href = originalUrl;
+          });
+
+          console.log('track-click response:', { data, dbError });
+
+          if (dbError) {
+            // Error calling track-click, or URL not found in DB
+            // For authenticated users, we typically wouldn't check localStorage as a fallback
+            // unless it's a specific requirement. Here, we assume if it's not in DB, it's an error.
+            console.error('Error tracking click or URL not found in DB for authenticated user:', dbError);
+            setError('Short URL not found or an error occurred.');
+            setLoading(false);
             return;
           }
-        }
 
-        // Track the click using the edge function for database URLs
-        console.log('Calling track-click edge function for:', id);
-        const { data, error } = await supabase.functions.invoke('track-click', {
-          body: {
-            shortCode: id,
-            userAgent: navigator.userAgent,
-            referrer: document.referrer,
-            ipAddress: await getClientIP()
+          if (data?.originalUrl) {
+            console.log('Found in database (authenticated user), redirecting to:', data.originalUrl);
+            window.location.href = data.originalUrl;
+            return; // Exit after successful redirect
+          } else {
+            // track-click succeeded but no originalUrl, means not found in DB
+            console.log('Short URL not found in database for authenticated user:', id);
+            setError('Short URL not found.');
+            // Optionally, you could check localStorage here as a last resort if desired
+            // but for now, we'll consider it not found.
           }
-        });
 
-        console.log('track-click response:', { data, error });
-
-        if (error) {
-          console.error('Error tracking click:', error);
-          setError('Short URL not found');
-          setLoading(false);
-          return;
-        }
-
-        if (data?.originalUrl) {
-          console.log('Found in database, redirecting to:', data.originalUrl);
-          // Redirect to the original URL
-          window.location.href = data.originalUrl;
         } else {
-          console.log('Short URL not found in database or localStorage:', id);
-          setError('Short URL not found');
+          // User is anonymous: localStorage first, then DB (track-click)
+          console.log('User is anonymous. Checking localStorage for:', id);
+          const stored = localStorage.getItem("shortenedUrls");
+          if (stored) {
+            try {
+              const urls = JSON.parse(stored);
+              const localUrl = urls[id];
+
+              if (localUrl && localUrl._secure) {
+                if (localUrl.expires && Date.now() > localUrl.expires) {
+                  console.log('Anonymous URL expired in localStorage:', id);
+                  // Don't set error yet, proceed to check DB
+                } else {
+                  const originalUrl = atob(localUrl.original);
+                  console.log('Found in localStorage (anonymous user), redirecting to:', originalUrl);
+                  window.location.href = originalUrl;
+                  return; // Exit after successful redirect
+                }
+              }
+            } catch (e) {
+              console.error("Error parsing localStorage or decoding base64 string", e);
+              // Problem with localStorage, proceed to check DB
+            }
+          }
+
+          // If not found in localStorage or expired/corrupted, try database via track-click for anonymous users
+          console.log('Not found or expired in localStorage (anonymous user). Calling track-click for:', id);
+          const { data, error: dbError } = await supabase.functions.invoke('track-click', {
+            body: {
+              shortCode: id,
+              userAgent: navigator.userAgent,
+              referrer: document.referrer,
+              ipAddress: await getClientIP()
+            }
+          });
+
+          console.log('track-click response (anonymous user):', { data, dbError });
+
+          if (dbError) {
+            console.error('Error tracking click for anonymous user:', dbError);
+            setError('Short URL not found or an error occurred.');
+            setLoading(false);
+            return;
+          }
+
+          if (data?.originalUrl) {
+            console.log('Found in database (anonymous user), redirecting to:', data.originalUrl);
+            window.location.href = data.originalUrl;
+            return; // Exit after successful redirect
+          } else {
+            console.log('Short URL not found in database or localStorage (anonymous user):', id);
+            setError('Short URL not found.');
+          }
         }
+
       } catch (error) {
         console.error('Error in redirect handler:', error);
-        setError('An error occurred while redirecting');
+        setError('An error occurred while redirecting.');
       } finally {
         setLoading(false);
       }
     };
 
     handleRedirect();
-  }, [id]);
+  }, [id, user, authLoading]); // Add user and authLoading to dependency array
 
   // Get client IP address (best effort)
   const getClientIP = async () => {
