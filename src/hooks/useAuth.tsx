@@ -31,6 +31,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const checkSubscription = async (sessionToUse?: Session | null) => {
     const currentSession = sessionToUse || session;
     if (!currentSession) {
+      setSubscribed(false);
+      setSubscriptionTier(null);
+      setSubscriptionEnd(null);
+      setSubscriptionLoading(false);
       return;
     }
     

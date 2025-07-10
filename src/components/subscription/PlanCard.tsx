@@ -23,32 +23,37 @@ export const PlanCard = ({ plan, isAnnual, index }: PlanCardProps) => {
     if (isLoading) return; // Prevent multiple clicks
     
     setIsLoading(true);
+    
+    // Early validation checks
+    if (!user) {
+      setIsLoading(false);
+      toast.error('Você precisa estar logado para assinar um plano');
+      return;
+    }
+
+    if (plan.name === 'Enterprise') {
+      setIsLoading(false);
+      return; // Enterprise plan doesn't have checkout
+    }
+
+    // Get the correct price ID based on language and billing period
+    const isBrazilian = language === 'pt';
+    let priceId: string | undefined;
+
+    if (isBrazilian && plan.stripePriceIds) {
+      priceId = isAnnual ? plan.stripePriceIds.annual : plan.stripePriceIds.monthly;
+    } else if (plan.stripePriceIds) {
+      // For non-Brazilian users, you might want to add USD price IDs later
+      priceId = isAnnual ? plan.stripePriceIds.annual : plan.stripePriceIds.monthly;
+    }
+
+    if (!priceId) {
+      setIsLoading(false);
+      toast.error('Price ID não encontrado para este plano');
+      return;
+    }
+
     try {
-      if (!user) {
-        toast.error('Você precisa estar logado para assinar um plano');
-        return;
-      }
-
-      if (plan.name === 'Enterprise') {
-        return; // Enterprise plan doesn't have checkout
-      }
-
-      // Get the correct price ID based on language and billing period
-      const isBrazilian = language === 'pt';
-      let priceId: string | undefined;
-
-      if (isBrazilian && plan.stripePriceIds) {
-        priceId = isAnnual ? plan.stripePriceIds.annual : plan.stripePriceIds.monthly;
-      } else if (plan.stripePriceIds) {
-        // For non-Brazilian users, you might want to add USD price IDs later
-        priceId = isAnnual ? plan.stripePriceIds.annual : plan.stripePriceIds.monthly;
-      }
-
-      if (!priceId) {
-        toast.error('Price ID não encontrado para este plano');
-        return;
-      }
-
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: { priceId }
       });

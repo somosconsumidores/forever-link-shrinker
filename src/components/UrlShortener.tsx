@@ -133,6 +133,32 @@ export const UrlShortener = () => {
   };
 
   const shortenUrl = async () => {
+    if (isLoading) return; // Prevent multiple clicks
+    
+    // Early validation checks
+    if (!url.trim()) {
+      toast({
+        title: t('pleaseEnterUrl'),
+        description: t('enterValidUrl'),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    let formattedUrl = url.trim();
+    if (!formattedUrl.startsWith("http://") && !formattedUrl.startsWith("https://")) {
+      formattedUrl = "https://" + formattedUrl;
+    }
+
+    if (!isValidUrl(formattedUrl)) {
+      toast({
+        title: t('invalidUrl'),
+        description: t('pleaseEnterValidUrl'),
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Get current URL count for logged-in users first
     if (user && userUrlCount === 0) {
       const { count } = await supabase
@@ -156,29 +182,6 @@ export const UrlShortener = () => {
       toast({
         title: "Rate limit exceeded",
         description: `Please wait ${rateCheck.retryAfter} seconds before trying again`,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!url.trim()) {
-      toast({
-        title: t('pleaseEnterUrl'),
-        description: t('enterValidUrl'),
-        variant: "destructive",
-      });
-      return;
-    }
-
-    let formattedUrl = url.trim();
-    if (!formattedUrl.startsWith("http://") && !formattedUrl.startsWith("https://")) {
-      formattedUrl = "https://" + formattedUrl;
-    }
-
-    if (!isValidUrl(formattedUrl)) {
-      toast({
-        title: t('invalidUrl'),
-        description: t('pleaseEnterValidUrl'),
         variant: "destructive",
       });
       return;
