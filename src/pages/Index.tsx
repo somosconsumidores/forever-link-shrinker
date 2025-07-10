@@ -10,13 +10,6 @@ const Index = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
 
-  // Debug básico para verificar se JavaScript está funcionando
-  console.log('=== INDEX COMPONENT RENDERIZADO ===');
-  console.log('Timestamp:', new Date().toISOString());
-  console.log('User object existe?', !!user);
-  console.log('User email:', user?.email);
-  console.log('User ID:', user?.id);
-
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}

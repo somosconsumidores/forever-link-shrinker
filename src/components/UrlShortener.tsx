@@ -133,18 +133,8 @@ export const UrlShortener = () => {
   };
 
   const shortenUrl = async () => {
-    console.log('=== FUNÇÃO SHORTENURL CHAMADA ===');
-    alert('Botão de encurtar clicado! Verifique o console para mais detalhes.');
-    
-    console.log('=== SHORTENURL DEBUG ===');
-    console.log('User object:', user);
-    console.log('User ID:', user?.id);
-    console.log('User email:', user?.email);
-    console.log('URL:', url);
-    
     // Get current URL count for logged-in users first
     if (user && userUrlCount === 0) {
-      console.log('Checking URL count for user:', user.id);
       const { count } = await supabase
         .from('shortened_urls')
         .select('*', { count: 'exact', head: true })
@@ -260,9 +250,6 @@ export const UrlShortener = () => {
       };
 
       if (user) {
-        console.log('Saving to database for user:', user.id);
-        console.log('URL data:', { formattedUrl, customId, finalId });
-        
         // Save to database for logged-in users
         const { error } = await supabase
           .from('shortened_urls')
@@ -272,8 +259,6 @@ export const UrlShortener = () => {
             custom_alias: customId || null,
             short_code: finalId,
           });
-
-        console.log('Insert result:', { error });
 
         if (error) {
           throw error;
@@ -311,9 +296,7 @@ export const UrlShortener = () => {
       }
 
       setResult(shortenedUrl);
-      console.log('URL shortened successfully:', shortenedUrl);
     } catch (error: any) {
-      console.error('Error in shortenUrl:', error);
       toast({
         title: t('error'),
         description: error.message || t('failedToShortenUrl'),
