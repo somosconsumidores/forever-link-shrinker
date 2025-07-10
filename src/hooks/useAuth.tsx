@@ -14,7 +14,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<{ error: any }>;
   resetPassword: (email: string) => Promise<{ error: any }>;
-  checkSubscription: (sessionToUse?: Session | null) => Promise<void>;
+  checkSubscription: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -28,38 +28,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
   const [subscriptionLoading, setSubscriptionLoading] = useState(false);
 
-  const checkSubscription = async (sessionToUse?: Session | null) => {
-    const currentSession = sessionToUse || session;
-    if (!currentSession) {
-      setSubscribed(false);
-      setSubscriptionTier(null);
-      setSubscriptionEnd(null);
-      setSubscriptionLoading(false);
-      return;
-    }
+  const checkSubscription = async () => {
+    if (!session) return;
     
     setSubscriptionLoading(true);
     try {
-      // Check subscription from database only
-      const { data: dbData, error: dbError } = await supabase
-        .from('subscribers')
-        .select('subscribed, subscription_tier, subscription_end')
-        .eq('email', currentSession.user.email)
-        .maybeSingle();
+      const { data, error } = await supabase.functions.invoke('check-subscription');
+      if (error) throw error;
       
-      if (dbData) {
-        setSubscribed(dbData.subscribed || false);
-        setSubscriptionTier(dbData.subscription_tier || null);
-        setSubscriptionEnd(dbData.subscription_end || null);
-      } else {
-        // If no subscription data found, set as free user
-        setSubscribed(false);
-        setSubscriptionTier(null);
-        setSubscriptionEnd(null);
-      }
+      setSubscribed(data.subscribed || false);
+      setSubscriptionTier(data.subscription_tier || null);
+      setSubscriptionEnd(data.subscription_end || null);
     } catch (error) {
       console.error('Error checking subscription:', error);
-      // On error, set as free user to allow app to continue
       setSubscribed(false);
       setSubscriptionTier(null);
       setSubscriptionEnd(null);
@@ -75,30 +56,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(session?.user ?? null);
         setLoading(false);
         
-        // Check subscription when user signs in or session is refreshed
-        if (session?.user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
-          await checkSubscription(session);
-        }
-        
-        // Reset subscription state when user signs out
-        if (event === 'SIGNED_OUT') {
-          setSubscribed(false);
-          setSubscriptionTier(null);
-          setSubscriptionEnd(null);
+        // Check subscription when user signs in
+        if (session?.user) {
+          await checkSubscription();
         }
       }
     );
 
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      console.log('Initial session check:', session?.user?.email);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
       
       // Check subscription on initial load
       if (session?.user) {
-        console.log('Calling checkSubscription on initial load');
-        await checkSubscription(session);
+        await checkSubscription();
       }
     });
 
@@ -129,10 +101,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
-    // Reset subscription state on logout
-    setSubscribed(false);
-    setSubscriptionTier(null);
-    setSubscriptionEnd(null);
     return { error };
   };
 

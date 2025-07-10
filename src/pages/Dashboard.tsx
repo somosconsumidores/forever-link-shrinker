@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Navigate, Link, useNavigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useSubscriptionLimits } from '@/hooks/useSubscriptionLimits';
 import { supabase } from '@/integrations/supabase/client';
@@ -27,8 +27,7 @@ interface ShortenedUrl {
 }
 
 const Dashboard = () => {
-  const navigate = useNavigate();
-  const { user, signOut, loading: authLoading, subscribed, subscriptionTier, checkSubscription } = useAuth();
+  const { user, signOut, loading: authLoading, subscribed, subscriptionTier } = useAuth();
   const { checkUrlLimit, isFeatureAllowed, getRemainingUrls } = useSubscriptionLimits();
   const { toast } = useToast();
   const [urls, setUrls] = useState<ShortenedUrl[]>([]);
@@ -264,7 +263,6 @@ const Dashboard = () => {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/');
   };
 
   if (loading) {

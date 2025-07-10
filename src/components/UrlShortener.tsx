@@ -27,9 +27,8 @@ export const UrlShortener = () => {
   const [result, setResult] = useState<ShortenedUrl | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
-  const { getRemainingUrls, checkUrlLimit } = useSubscriptionLimits();
+  const { getRemainingUrls } = useSubscriptionLimits();
   const { t } = useLanguage();
-  const [userUrlCount, setUserUrlCount] = useState<number>(0);
 
   const generateShortId = () => {
     return Math.random().toString(36).substring(2, 8);
@@ -42,7 +41,7 @@ export const UrlShortener = () => {
         .from('shortened_urls')
         .select('short_code')
         .eq('short_code', id)
-        .maybeSingle();
+        .single();
       return !!data;
     } else {
       // Check in localStorage for anonymous users and clean expired entries
@@ -133,12 +132,20 @@ export const UrlShortener = () => {
   };
 
   const shortenUrl = async () => {
-    if (isLoading) {
-      console.log('UrlShortener: Already loading, ignoring click');
+    // Rate limiting check
+    const limiter = user ? authenticatedLimiter : urlShortenLimiter;
+    const identifier = user?.id || 'anonymous';
+    const rateCheck = limiter.checkLimit(identifier);
+    
+    if (!rateCheck.allowed) {
+      toast({
+        title: "Rate limit exceeded",
+        description: `Please wait ${rateCheck.retryAfter} seconds before trying again`,
+        variant: "destructive",
+      });
       return;
     }
-    
-    console.log('UrlShortener: Starting URL shortening process');
+
     if (!url.trim()) {
       toast({
         title: t('pleaseEnterUrl'),
@@ -157,34 +164,6 @@ export const UrlShortener = () => {
       toast({
         title: t('invalidUrl'),
         description: t('pleaseEnterValidUrl'),
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Get current URL count for logged-in users first
-    if (user && userUrlCount === 0) {
-      const { count } = await supabase
-        .from('shortened_urls')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id);
-      setUserUrlCount(count || 0);
-      
-      // Check URL limit for logged-in users
-      if (!checkUrlLimit(count || 0)) {
-        return;
-      }
-    }
-
-    // Rate limiting check
-    const limiter = user ? authenticatedLimiter : urlShortenLimiter;
-    const identifier = user?.id || 'anonymous';
-    const rateCheck = limiter.checkLimit(identifier);
-    
-    if (!rateCheck.allowed) {
-      toast({
-        title: "Rate limit exceeded",
-        description: `Please wait ${rateCheck.retryAfter} seconds before trying again`,
         variant: "destructive",
       });
       return;
@@ -240,7 +219,6 @@ export const UrlShortener = () => {
     }
 
     setIsLoading(true);
-    console.log('UrlShortener: Set loading to true, finalId:', finalId);
 
     try {
       const shortened = `${window.location.origin}/${finalId}`;
@@ -270,9 +248,6 @@ export const UrlShortener = () => {
         if (error) {
           throw error;
         }
-
-        // Update the user URL count
-        setUserUrlCount(prev => prev + 1);
 
         toast({
           title: t('urlShortenedSuccess'),
@@ -310,7 +285,6 @@ export const UrlShortener = () => {
         variant: "destructive",
       });
     } finally {
-      console.log('UrlShortener: Setting loading to false');
       setIsLoading(false);
     }
   };
@@ -412,14 +386,14 @@ export const UrlShortener = () => {
                 </div>
                 <div className="flex-1 relative max-w-md">
                   <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-sm">
-                    /
+                    {window.location.host}/
                   </span>
                   <Input
                     type="text"
                     placeholder={t('customName')}
                     value={customId}
                     onChange={(e) => setCustomId(e.target.value)}
-                    className="pl-6 h-10 text-sm bg-background/50 border-border/50 focus:border-primary/50 transition-all"
+                    className="pl-20 h-10 text-sm bg-background/50 border-border/50 focus:border-primary/50 transition-all"
                     disabled={isLoading}
                   />
                 </div>
