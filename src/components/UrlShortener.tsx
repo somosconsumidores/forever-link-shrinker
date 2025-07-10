@@ -42,7 +42,7 @@ export const UrlShortener = () => {
         .from('shortened_urls')
         .select('short_code')
         .eq('short_code', id)
-        .single();
+        .maybeSingle();
       return !!data;
     } else {
       // Check in localStorage for anonymous users and clean expired entries
