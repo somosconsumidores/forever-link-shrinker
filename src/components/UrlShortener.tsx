@@ -133,10 +133,14 @@ export const UrlShortener = () => {
   };
 
   const shortenUrl = async () => {
+    console.log('=== FUNÇÃO SHORTENURL CHAMADA ===');
+    alert('Botão de encurtar clicado! Verifique o console para mais detalhes.');
+    
     console.log('=== SHORTENURL DEBUG ===');
     console.log('User object:', user);
     console.log('User ID:', user?.id);
     console.log('User email:', user?.email);
+    console.log('URL:', url);
     
     // Get current URL count for logged-in users first
     if (user && userUrlCount === 0) {
