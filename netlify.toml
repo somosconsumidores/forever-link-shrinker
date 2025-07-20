@@ -13,7 +13,7 @@
     X-Content-Type-Options = "nosniff"
     X-XSS-Protection = "1; mode=block"
     Referrer-Policy = "strict-origin-when-cross-origin"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://gezflwjzfaywzbtvyzai.supabase.co; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://gezflwjzfaywzbtvyzai.supabase.co https://api.ipify.org; frame-ancestors 'none';"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://gezflwjzfaywzbtvyzai.supabase.co https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://gezflwjzfaywzbtvyzai.supabase.co https://api.ipify.org https://www.google-analytics.com; frame-ancestors 'none';"
 
 # Cache static assets
 [[headers]]
