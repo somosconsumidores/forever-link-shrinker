@@ -26,8 +26,6 @@
   from = "/:shortcode"
   to = "/index.html"
   status = 200
-  conditions = {Role = ["admin", "editor"], Country = ["US"]}
-  force = false
 
 # Handle API routes if any
 [[redirects]]
