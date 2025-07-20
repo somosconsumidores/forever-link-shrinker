@@ -37,6 +37,12 @@ const Dashboard = () => {
   const [bulkUrls, setBulkUrls] = useState('');
   const [processingBulk, setProcessingBulk] = useState(false);
 
+  useEffect(() => {
+    if (user) {
+      fetchUrls();
+    }
+  }, [user]);
+
   if (authLoading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
@@ -44,10 +50,6 @@ const Dashboard = () => {
   if (!user) {
     return <Navigate to="/auth" replace />;
   }
-
-  useEffect(() => {
-    fetchUrls();
-  }, []);
 
   const fetchUrls = async () => {
     try {
