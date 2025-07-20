@@ -1,6 +1,2 @@
-# Netlify redirects for URL shortener
-# Handle short URL redirects - any 6-8 character alphanumeric string
-/[a-zA-Z0-9-]{3,12} /index.html 200
-
-# SPA routing - all other routes go to index.html
+# SPA routing - handle all routes
 /* /index.html 200
